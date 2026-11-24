@@ -22,6 +22,20 @@ Levantamento feito em 24/11/2026 a partir dos perfis públicos do Daniel. Base p
 - **Petrobras** — Project Manager · 2003 a 2009
 - Formação: **MELIES** — Escola de Cinema 3D e Animação
 
+## Ilustração de cards (informado pelo Alex, não aparece nos perfis)
+
+- **Disney**
+- **Magic: The Gathering**
+- **Marvel**
+
+Ainda faltam os detalhes: quais cards, de quais coleções, em que ano e por qual estúdio ou cliente.
+
+## Bio (versão da ligação, atualizada)
+
+> Daniel Hodge, ilustrador e animador 2D. Oito anos em games, com Street Fighter 5, Diablo, Riot e Sony. Cards para Disney, Magic: The Gathering e Marvel. Aberturas de novela da Globo, livros infantis e um prêmio no Anima Mundi.
+
+Antes de publicar, confirmar com o Daniel os itens que não aparecem nos perfis (ver perguntas no fim).
+
 ## ArtStation — 23 trabalhos
 
 | Trabalho | Publicado | Likes | Link |
@@ -73,7 +87,7 @@ Levantamento feito em 24/11/2026 a partir dos perfis públicos do Daniel. Base p
 
 1. **Os 5 anos de Lemon Sky (2019–2024) não aparecem em lugar nenhum.** É o período mais forte do currículo e o portfólio para em 2016–2017. Provavelmente há NDA, mas parte desse trabalho já pode ser mostrável (jogos lançados). Perguntar ao Daniel o que pode entrar.
 2. **Título desencontrado.** ArtStation diz "Freelance Illustrator"; Behance e LinkedIn dizem "2D Concept Artist". Escolher um e usar igual em tudo.
-3. **A bio que fizemos na ligação cita Riot, Sony e Anima Mundi**, que não aparecem nos perfis. Confirmar com o Daniel antes de publicar: em que projeto, em qual estúdio (Lemon Sky? Streamline?) e em que ano do Anima Mundi.
+3. **A bio cita Riot, Sony, Anima Mundi e os cards (Disney, Magic: The Gathering, Marvel)**, e nada disso aparece nos perfis. Os cards são o item mais forte para Games, porque são nomes que qualquer estúdio reconhece. Confirmar com o Daniel antes de publicar: em que projeto, em qual estúdio (Lemon Sky? Streamline?) e em que ano do Anima Mundi.
 4. **Material de Animação existe, mas está escondido** no LinkedIn (A Grande Família, Telecine Fun, campanha de trânsito). Vale puxar os vídeos para a seção Animação.
 5. **Livros Infantis tem pouco material online** (Behance "Book Illustration", Tito e os Protetores, Turma da Mônica fan art). Precisa de mais peças do acervo dele.
 6. **Fan art de IP de terceiros** (Zelda, Hearthstone, Dr. Strange, Turma da Mônica, Udyr) é ótima para mostrar habilidade, mas deve ficar marcada como fan art no site.
@@ -81,6 +95,7 @@ Levantamento feito em 24/11/2026 a partir dos perfis públicos do Daniel. Base p
 
 ## Pré-seleção por seção (para o Daniel aprovar)
 
+- **Cards:** subseção dentro de Games, com os cards de Disney, Magic: The Gathering e Marvel. Se houver muito material, vale virar uma seção própria.
 - **Games:** Polar Bearfolk Ranger, Udyr, Hearthstone (3 peças), Ferrol Lynn the Pirate, Clayton the sea wolf, Leon the Knife-Thrower, Giuseppe 'Corpse Face' Gambino, Seven League Boots, Finally we found a giant robot! — mais o que puder de Lemon Sky e Streamline.
 - **Animação:** A Grande Família (Globo), Reis da Comédia (Telecine Fun), Ultrapassagem perigosa.
 - **Livros Infantis:** Book Illustration, Tito e os Protetores, Tito Club, Rockabilly Rooster, Turma da Mônica (fan art).
@@ -93,3 +108,4 @@ Levantamento feito em 24/11/2026 a partir dos perfis públicos do Daniel. Base p
 3. Anima Mundi: qual ano e qual filme?
 4. Tem os arquivos em alta das peças, ou só o que está nos sites?
 5. Título oficial: "2D Concept Artist", "Illustrator", ou os dois?
+6. Cards de Disney, Magic: The Gathering e Marvel: quais cards e coleções, em que ano, por qual estúdio? O contrato deixa mostrar no portfólio? Tem as artes em alta?
