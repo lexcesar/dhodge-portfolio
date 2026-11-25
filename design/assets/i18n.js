@@ -139,9 +139,14 @@
 	   goes into innerHTML or an attribute. */
 	const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 	/* Strings that come from the CMS (section leads): { pt: { key: value }, en: { … } }. */
+	const DEFAULTS = { pt: {}, en: {} };
 	const extend = (more) => Object.entries(more).forEach(([l, map]) => {
 		if (!STR[l]) return;
-		Object.entries(map).forEach(([k, v]) => { STR[l][k] = esc(v); }); /* data-i18n writes innerHTML */
+		Object.entries(map).forEach(([k, v]) => {
+			if (!(k in DEFAULTS[l])) DEFAULTS[l][k] = STR[l][k];
+			if (v == null || v === '') { if (DEFAULTS[l][k] === undefined) delete STR[l][k]; else STR[l][k] = DEFAULTS[l][k]; }
+			else STR[l][k] = esc(v); /* data-i18n writes innerHTML */
+		});
 	});
 
 	/* Static text: data-i18n="key" (innerHTML), data-i18n-attr="attr:key; attr:key". */

@@ -10,7 +10,8 @@
 		"typecheck": "tsc --noEmit",
 		"schema:extract": "sanity schema extract --enforce-required-fields --force",
 		"import:dry": "sanity exec scripts/import.ts --with-user-token -- --dry",
-		"import": "sanity exec scripts/import.ts --with-user-token"
+		"import": "sanity exec scripts/import.ts --with-user-token",
+		"build:preview": "esbuild preview/preview.ts --bundle --format=esm --minify --target=es2022 --legal-comments=none --outfile=../design/assets/preview.js && cp node_modules/@sanity/visual-editing-standalone/dist/styles.css ../design/assets/preview.css"
 	},
 	"dependencies": {
 		"@sanity/icons": "^5.4.0",
@@ -23,8 +24,12 @@
 		"styled-components": "^6.1.15"
 	},
 	"devDependencies": {
+		"@sanity/client": "^8.17.0",
+		"@sanity/core-loader": "^2.3.0",
+		"@sanity/visual-editing-standalone": "^2.0.4",
 		"@types/node": "^24.19.4",
 		"@types/react": "^19.2.0",
+		"esbuild": "^0.28.2",
 		"typescript": "^5.9.0"
 	}
 }

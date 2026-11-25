@@ -123,8 +123,19 @@ Projetos de referência:
 - **Revisões:**
   - menu (4 achados) e integração (2 bloqueios + 7) corrigidos e verificados em Chromium e WebKit;
   - scripts de teste no scratchpad da sessão 0db4c706 (`check.cjs`, `menu-fix.cjs`, `hash.cjs`, `t1-t5.cjs`).
+- **Editor visual (25/11/2026, tarde):** o Studio abre no "Editor visual" (Presentation), que é padrão em todo projeto,
+  por pedido do Alex.
+  - O site detecta que está dentro dele (iframe + `?sanity-preview-perspective=`, pai = Studio) e carrega
+    `design/assets/preview.js`, gerado por `studio/preview/preview.ts` com `pnpm build:preview`: core-loader em live mode
+    mais `@sanity/visual-editing-standalone`. O visitante comum não baixa nada disso.
+  - Rascunhos vêm do próprio Studio (login do editor), sem token no site. Texto clicável por stega, imagens de obra por
+    `data-sanity`.
+  - **Ao vivo, sem refresh:** a edição redesenha no lugar (`DH_RERENDER`: prateleiras, destaques, portas, retrato,
+    visualizador aberto, menu). Medido: ~1,6 s do rascunho salvo à prévia, sem reload.
+  - Teste: `ve.cjs`/`ve2.cjs` no scratchpad da sessão, com o Studio local na porta 3333 e o site na 4330.
+- **Daniel convidado como Editor** (daniel.hodge@gmail.com, 25/11/2026, convite pendente).
 - **Falta:**
-  - convidar o Daniel como editor (o Alex passa o e-mail) e escrever um guia curto do Studio para ele;
+  - escrever um guia curto do Studio para o Daniel;
   - e-mail de contato no site: o campo saiu do schema até existir no layout;
   - fotos com GPS: o CDN serve o original a quem tiver a URL, então tirar EXIF antes de subir;
   - teste em iPhone/Android de verdade e com VoiceOver.

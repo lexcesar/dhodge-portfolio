@@ -40,20 +40,24 @@
 		const frames = rel.length ? rel.slice(0, 4).map((x) => x.img) : stepsOf(w);
 		return { final: doorImg(key) || (w ? src(w.img, 1200) : ''), frames: frames.map((n) => src(n, 1200)) };
 	};
-	const ART = {
+	const makeArt = () => ({
 		games: doorArt('games'),
 		animacao: doorArt('animacao'),
 		livros: doorArt('livros'),
 		sketchbook: { final: ((w) => (w ? src(w.img, 1200) : ''))(byId['sk-witch'] || WORKS.find((w) => w.section === 'sketchbook')) },
-		sobre: { final: src(PROFILE.photos[0].img, 1200), portrait: true },
-	};
+		sobre: { final: PROFILE.photos[0] ? src(PROFILE.photos[0].img, 1200) : '', portrait: true },
+	});
+	let ART = makeArt();
 
 	const counts = () => $$('[data-menu-count]').forEach((el) => {
 		const n = WORKS.filter((w) => w.section === el.dataset.menuCount).length;
 		el.innerHTML = `<span aria-hidden="true">${n}</span><span class="sr-only">, ${t('works', n)}</span>`;
 	});
-	$('[data-menu-profiles]').innerHTML = PROFILE.links
-		.map(([label, href]) => `<li><a href="${I18N.esc(href)}" target="_blank" rel="noopener">${I18N.esc(label)}</a></li>`).join('');
+	const profiles = () => {
+		$('[data-menu-profiles]').innerHTML = PROFILE.links
+			.map(([label, href]) => `<li><a href="${I18N.esc(href)}" target="_blank" rel="noopener">${I18N.esc(label)}</a></li>`).join('');
+	};
+	profiles();
 	$('[data-menu-icon]').innerHTML = icon.next;
 	counts();
 	I18N.onChange(counts);
@@ -106,6 +110,18 @@
 	};
 	if (document.readyState === 'complete') afterLoad();
 	else window.addEventListener('load', afterLoad, { once: true });
+	/* An edit in the Studio (visual editing): new art, counts and profile links; built art is rebuilt. */
+	const refreshMenu = () => {
+			ART = makeArt();
+			counts();
+			profiles();
+			if (!built) return;
+			const withFrames = framed;
+			built = false;
+			framed = false;
+			build(withFrames);
+	};
+
 	/* iOS only paints :active when a touch listener exists */
 	document.addEventListener('touchstart', () => {}, { passive: true });
 
@@ -438,5 +454,5 @@
 		go(a);
 	}));
 
-	window.Menu = { open, close, get state() { return state; } };
+	window.Menu = { open, close, refresh: refreshMenu, get state() { return state; } };
 })();

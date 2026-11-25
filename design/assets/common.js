@@ -5,7 +5,17 @@
 	/* Sanity images come from the CDN (WebP/AVIF where supported, never upscaled); works.js names are local files. */
 	const CMS_IMG = window.DH_IMG || {};
 	const src = (name, w = 1800) => (CMS_IMG[name] ? `${CMS_IMG[name].url}?w=${w}&fit=max&auto=format` : `${BASE}${name}.jpg`);
-	const byId = Object.fromEntries(window.WORKS.map((w) => [w.id, w]));
+	const byId = {};
+	let onReindex = () => {}; /* set by the viewer below */
+	/* Rebuilt in place when the Studio sends an edit (cms.js, visual editing). */
+	const reindex = () => {
+		Object.keys(byId).forEach((k) => delete byId[k]);
+		window.WORKS.forEach((w) => { byId[w.id] = w; });
+		onReindex();
+	};
+	reindex();
+	/* Click-to-edit outline for a work's image, inside the Studio only. */
+	const editAttr = (w) => (w.edit ? ` data-sanity="${esc(w.edit)}"` : '');
 	/* Featured work per section: chosen in the Studio (window.SECTIONS) or, with works.js, the original picks. */
 	const FEATURED = { games: 'bear', animacao: 'robot', livros: 'tito' };
 	const featured = (section) => {
@@ -65,6 +75,7 @@
 		let k = 0;
 		const list = w.steps;
 		const tick = () => {
+			if (!el.isConnected) { clearTimeout(timer); timer = 0; return; } /* re-rendered while hovered */
 			const [label, name] = list[k];
 			flip.src = src(name);
 			chip.textContent = `${k + 1}/${list.length} · ${step(label)}`;
@@ -92,7 +103,7 @@
 		const name = esc(title(w));
 		el.innerHTML = `
 			<button class="work__open" type="button" data-cursor="${hasSteps(w) ? 'process' : 'view'}" aria-label="${t('open', name)}${hasSteps(w) ? t('open.process') : ''}">
-				<img class="work__img" src="${src(w.img, 1200)}" alt="${name}, ${esc(kind(w.kind).toLowerCase())}" width="${w.w}" height="${w.h}" loading="lazy" decoding="async">
+				<img class="work__img" src="${src(w.img, 1200)}"${editAttr(w)} alt="${name}, ${esc(kind(w.kind).toLowerCase())}" width="${w.w}" height="${w.h}" loading="lazy" decoding="async">
 			</button>
 			<figcaption class="work__caption">
 				<span class="work__title">${name}</span>
@@ -296,5 +307,18 @@
 		window.addEventListener('scroll', onScroll, { passive: true });
 	}
 
-	window.DH = { src, byId, featured, related, imgName, card, openViewer, fadeIn, icon, transition, reduced };
+	/* An open viewer follows the edit: same piece (new object), or closes if the piece is gone. */
+	onReindex = () => {
+		if (!dlg?.open || !current) return;
+		const w = byId[current.id];
+		if (!w) { closeViewer(); return; }
+		current = w;
+		step_ = Math.min(step_, frames(w).length - 1);
+		fill();
+		mark();
+		const want = src(frames(w)[step_][1]);
+		if (v.img.getAttribute('src') !== want) v.img.src = want;
+	};
+
+	window.DH = { src, byId, reindex, editAttr, featured, related, imgName, card, openViewer, fadeIn, icon, transition, reduced };
 })();

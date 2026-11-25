@@ -1,7 +1,7 @@
 (() => {
 	const { WORKS, PROFILE, I18N, DH, Motion } = window;
 	const { t, L, title, kind, step, esc } = I18N;
-	const { card, src, featured, related, openViewer, fadeIn, icon, transition } = DH;
+	const { card, src, featured, related, editAttr, openViewer, fadeIn, icon, transition } = DH;
 	const $ = (s, r = document) => r.querySelector(s);
 	const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 	const params = new URLSearchParams(location.search);
@@ -37,7 +37,7 @@
 		const name = esc(title(w));
 		box.innerHTML = `
 			<button class="feature__open" type="button" data-cursor="${steps.length ? 'process' : 'view'}" aria-label="${t('open', name)}">
-				<img class="feature__img" src="${src(w.img)}" alt="${name}" width="${w.w}" height="${w.h}" loading="lazy" decoding="async">
+				<img class="feature__img" src="${src(w.img)}"${editAttr(w)} alt="${name}" width="${w.w}" height="${w.h}" loading="lazy" decoding="async">
 			</button>
 			<div class="feature__side">
 				<h3 class="feature__title">${name}</h3>
@@ -209,15 +209,25 @@
 	}));
 
 	/* Door pictures are in the HTML (they are the first paint); swap one only when the featured image changed in the Studio. */
-	$$('[data-door]').forEach((door) => {
+	const doors = () => $$('[data-door]').forEach((door) => {
 		const w = featured(door.dataset.door);
 		const img = $('.door__img', door);
 		if (!w || !img) return;
 		/* data-key: the Sanity asset the HTML picture was uploaded as (same hash = same picture) */
-		if (window.DH_CMS === 'sanity' && img.dataset.key !== w.img) img.src = src(w.img, 1200);
+		if (window.DH_IMG && img.dataset.key !== w.img) img.src = src(w.img, 1200);
 	});
+	doors();
 
 	render();
+	/* An edit in the Studio (visual editing): same page, new content. */
+	window.DH_RERENDER = () => {
+		render(true);
+		if (order) applyOrder(order);
+		doors();
+		Motion.revealAll();
+		window.Portrait?.refresh();
+		window.Menu?.refresh();
+	};
 	/* The content arrives after the browser's own jump to #hash and scroll restore (cms.js waits for Sanity),
 	   so land here, once the page has its height. */
 	const saved = (() => { try { return sessionStorage.getItem(`dh-scroll:${location.pathname}${location.search}${location.hash}`); } catch { return null; } })();

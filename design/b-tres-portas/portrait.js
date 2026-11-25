@@ -19,14 +19,15 @@
 	let visible = false;
 	let timer = 0;
 
-	const photos = PROFILE.photos;
-	const srcOf = (k) => DH.src(photos[k].img);
+	/* read live: an edit in the Studio replaces the list (cms.js, visual editing) */
+	const photos = () => PROFILE.photos;
+	const srcOf = (k) => DH.src(photos()[k].img);
 
 	const relabel = () => {
 		if (!fig) return;
-		imgs.forEach((img, k) => { img.alt = L(photos[k].alt); });
-		caption.textContent = L(photos[index].caption);
-		count.textContent = `${index + 1}/${photos.length}`;
+		imgs.forEach((img, k) => { img.alt = L(photos()[k].alt); });
+		caption.textContent = L(photos()[index].caption);
+		count.textContent = `${index + 1}/${photos().length}`;
 		toggle.innerHTML = paused ? DH.icon.play : DH.icon.pause;
 		toggle.setAttribute('aria-label', paused ? t('portrait.play') : t('portrait.pause'));
 		toggle.setAttribute('aria-pressed', String(paused));
@@ -44,7 +45,7 @@
 		let f = 0;
 		const step = () => {
 			if (id !== scrambleId) return;
-			const to = L(photos[k].caption); /* read each frame: the language may change mid-way */
+			const to = L(photos()[k].caption); /* read each frame: the language may change mid-way */
 			const p = f / frames;
 			caption.textContent = [...to].map((ch, i) => (ch === ' ' || i / to.length < p ? ch : pick(GLYPHS))).join('');
 			if (f++ < frames) setTimeout(step, 45); else caption.textContent = to;
@@ -68,7 +69,7 @@
 		fig.classList.add('is-glitching');
 		chromaR.src = chromaC.src = srcOf(from);
 		scramble(next, 14);
-		count.textContent = `${next + 1}/${photos.length}`;
+		count.textContent = `${next + 1}/${photos().length}`;
 
 		const frame = () => {
 			if (f === SWAP) { setActive(next); chromaR.src = chromaC.src = srcOf(next); }
@@ -105,7 +106,19 @@
 	const schedule = () => {
 		clearTimeout(timer);
 		if (reduced || paused || !visible || document.hidden) return;
-		timer = setTimeout(() => { glitchTo((index + 1) % photos.length); schedule(); }, INTERVAL);
+		timer = setTimeout(() => { glitchTo((index + 1) % photos().length); schedule(); }, INTERVAL);
+	};
+
+	const fillStack = () => {
+		stack.innerHTML = photos().map((p, k) => `<img class="portrait__img${k === index ? ' is-active' : ''}" src="${srcOf(k)}" alt="" width="1200" height="900" loading="lazy" decoding="async">`).join('');
+		imgs = [...stack.children];
+	};
+	/* New photos, captions or order from the Studio. */
+	const refresh = () => {
+		if (!fig || !photos().length) return;
+		index = Math.min(index, photos().length - 1);
+		fillStack();
+		relabel();
 	};
 
 	const init = () => {
@@ -120,18 +133,17 @@
 		toggle = $('[data-portrait-toggle]', fig);
 		seed = document.querySelector('[data-noise-seed]');
 
-		stack.innerHTML = photos.map((p, k) => `<img class="portrait__img${k === 0 ? ' is-active' : ''}" src="${srcOf(k)}" alt="" width="1200" height="900" loading="lazy" decoding="async">`).join('');
-		imgs = [...stack.children];
+		fillStack();
 		slices.innerHTML = Array.from({ length: SLICES }, () => '<span class="portrait__slice" hidden><img alt=""></span>').join('');
 		paused = reduced;
 		toggle.hidden = reduced;
 		relabel();
 
-		$('[data-portrait-next]', fig).addEventListener('click', () => { glitchTo((index + 1) % photos.length); schedule(); });
+		$('[data-portrait-next]', fig).addEventListener('click', () => { glitchTo((index + 1) % photos().length); schedule(); });
 		toggle.addEventListener('click', () => { paused = !paused; relabel(); schedule(); });
 		new IntersectionObserver(([en]) => { visible = en.isIntersecting; schedule(); }, { threshold: 0.4 }).observe(fig);
 		document.addEventListener('visibilitychange', schedule);
 	};
 
-	window.Portrait = { init, relabel };
+	window.Portrait = { init, relabel, refresh };
 })();
