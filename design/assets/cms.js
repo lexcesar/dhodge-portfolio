@@ -35,9 +35,11 @@
 	const asked = new URLSearchParams(location.search).has('sanity-preview-perspective');
 	const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 	const parent = location.ancestorOrigins?.[0];
-	const fromStudio = parent === undefined || STUDIO.test(parent);
+	/* the hosted Studio can run inside the Sanity dashboard: any Sanity origin (or the local Studio) may be the parent */
+	const SANITY = /^(https:\/\/([a-z0-9-]+\.)*sanity\.(studio|io)|http:\/\/localhost:3333)$/;
+	const fromStudio = parent === undefined || SANITY.test(parent);
 	const studioUrl = framed && fromStudio && (asked || remembered)
-		? STUDIO.exec(parent || '')?.[1] || STUDIO.exec(document.referrer)?.[1] || remembered || (local ? 'http://localhost:3333' : 'https://dhodge.sanity.studio')
+		? STUDIO.exec(parent || '')?.[1] || STUDIO.exec(document.referrer)?.[1] || remembered || (local || parent === 'http://localhost:3333' ? 'http://localhost:3333' : 'https://dhodge.sanity.studio')
 		: null;
 	if (studioUrl) try { sessionStorage.setItem('dh-studio', studioUrl); } catch { /* private mode */ }
 	let P = null; /* the preview module, when loaded */
