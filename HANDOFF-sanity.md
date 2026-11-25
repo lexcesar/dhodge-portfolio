@@ -116,7 +116,9 @@ Projetos de referência:
     `data-then`. Se falhar ou passar de 3 s, carrega `works.js`.
   - Uma edição publicada chega ao apicdn em ~0,3 s, mas o navegador guarda a resposta por até 60 s
     (`max-age=60`): avisar o Daniel.
-  - Texto do CMS é escapado (`I18N.esc`), links só https, e há CSP `script-src 'self'`.
+  - Texto do CMS é escapado (`I18N.esc`) e os links só aceitam https.
+  - Sem CSP: `script-src 'self'` barrava o beacon do Cloudflare Web Analytics e o JS Detections inline, que a Cloudflare
+    injeta na borda a cada requisição. Liberar com `'unsafe-inline'` anularia a CSP.
   - O `works.js` é só reserva: **não editar mais**, porque a fonte de verdade é o Sanity.
 - **Revisões:**
   - menu (4 achados) e integração (2 bloqueios + 7) corrigidos e verificados em Chromium e WebKit;
