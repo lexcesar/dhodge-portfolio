@@ -792,20 +792,9 @@ button { font: inherit; color: inherit; }
 	.contact__links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-m); }
 }
 
-/* ---------- <=899: two-row top bar, smaller shelf ---------- */
+/* ---------- <=899: smaller shelf ---------- */
 @media (max-width: 899.98px) {
-	:root { --nav-height: 6.25rem; --shelf-h: 12rem; --type-h1: clamp(2.5rem, 1.25rem + 3.6vw, 3.25rem); }
-
-	.topbar__inner {
-		display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 3.5rem 2.75rem; column-gap: var(--space-m); row-gap: 0;
-	}
-	.wordmark { grid-column: 1; grid-row: 1; }
-	.topbar__actions { grid-column: 2; grid-row: 1; justify-self: end; }
-	.nav {
-		grid-column: 1 / -1; grid-row: 2; align-self: stretch;
-		margin-inline: calc(var(--page-pad) * -1); padding-inline: calc(var(--page-pad) - 0.375rem); scroll-padding-inline: calc(var(--page-pad) - 0.375rem);
-	}
-	.lang { padding: 0.125rem; }
+	:root { --shelf-h: 12rem; --type-h1: clamp(2.5rem, 1.25rem + 3.6vw, 3.25rem); }
 }
 
 /* ---------- <=599: phone ---------- */
@@ -823,7 +812,6 @@ button { font: inherit; color: inherit; }
 	}
 	.button { padding: 0 var(--space-m); }
 	.wordmark { font-size: 1.25rem; }
-	.topbar__actions { gap: var(--space-xs); }
 
 	/* intro + doors: one door per row, no flex-grow games */
 	.intro { padding-bottom: var(--space-l); }
@@ -880,19 +868,9 @@ button { font: inherit; color: inherit; }
 	.viewer__step { scroll-snap-align: center; }
 }
 
-/* narrow phones: a bit more squeeze in the first row */
+/* narrow phones */
 @media (max-width: 379.98px) {
-	.wordmark { font-size: 1.125rem; }
-	.topbar__actions { gap: 0.25rem; }
 	.button { padding: 0 0.875rem; }
-}
-
-/* very narrow phones (320-349): Contato drops to the nav row so nothing is squeezed */
-@media (max-width: 349.98px) {
-	.topbar__actions { display: contents; }
-	.topbar__actions .lang { grid-column: 2; grid-row: 1; justify-self: end; }
-	.topbar__actions .button { grid-column: 2; grid-row: 2; align-self: center; height: 2.75rem; margin-left: var(--space-xs); }
-	.nav { grid-column: 1; margin-inline: calc(var(--page-pad) * -1) 0; padding-right: var(--space-m); }
 }
 
 /* landscape phones and short windows: the viewer gives the picture the height */
@@ -920,3 +898,236 @@ button { font: inherit; color: inherit; }
 	.viewer__step[aria-current="step"] { border-color: var(--link-hover-accent); }
 	.viewer__thumb { display: none; }
 }
+
+/* =====================================================================
+   Menu (<=1023): a pencil test. The bar keeps only the name and the menu
+   button; the menu unrolls in the three door inks, and each door draws itself
+   from its own process frames (thumbnail, line, values, color) as it arrives.
+   Choreography lives in menu.js (WAAPI, interruptible); here, the resting
+   (open) look. Nothing here renders at 1024px and up.
+   ===================================================================== */
+.menu-trigger { display: none; }
+
+@media (max-width: 1023.98px) {
+	:root { --nav-height: 4rem; }
+	.topbar .nav, .topbar__actions { display: none; }
+	.menu-trigger { display: inline-flex; margin-left: auto; }
+	/* while the menu is up, its own bar stands in for the page bar */
+	html.is-menu-open .topbar .wordmark, html.is-menu-open .menu-trigger { visibility: hidden; }
+
+	/* ---------- the button: "Menu" plus the three door inks as strokes ---------- */
+	.menu-button {
+		position: relative; align-items: center; gap: 0.75rem; height: 2.75rem; padding: 0 1rem 0 1.125rem;
+		border: 1px solid var(--border-strong); border-radius: var(--radius-control); background: transparent; color: var(--text);
+		font-family: var(--font-display); font-size: 1rem; font-weight: 700; font-stretch: 100%; letter-spacing: var(--track-wide);
+		cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+		transition: border-color var(--dur-base) var(--ease-standard), transform var(--dur-fast) var(--ease-standard), outline-color var(--dur-fast) var(--ease-standard);
+	}
+	.menu__close { display: inline-flex; }
+	.menu-button__label { display: grid; overflow: clip; overflow-clip-margin: 0.125rem; line-height: 1.25; }
+	.menu-button__label > span { grid-area: 1 / 1; }
+	.menu-trigger .menu-button__label > span + span { visibility: hidden; }
+	.menu__close .menu-button__label > span:first-child { transform: translateY(-115%); }
+	.menu-button__icon { position: relative; display: block; flex: none; width: 1.125rem; height: 0.875rem; }
+	.menu-button__icon i {
+		position: absolute; left: 0; width: 100%; height: 2px; background: var(--stroke);
+		transform-origin: 50% 50%; transition: transform var(--dur-base) var(--ease-out-quint);
+	}
+	.menu-button__icon i:nth-child(1) { top: 0; --stroke: var(--palette-variant-games); }
+	.menu-button__icon i:nth-child(2) { top: calc(50% - 1px); width: 70%; --stroke: var(--palette-variant-animacao); }
+	.menu-button__icon i:nth-child(3) { bottom: 0; --stroke: var(--palette-variant-livros); }
+	.menu__close .menu-button__icon i { --stroke: var(--palette-paper-0); }
+	.menu__close .menu-button__icon i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+	.menu__close .menu-button__icon i:nth-child(2) { transform: scaleX(0); opacity: 0; }
+	.menu__close .menu-button__icon i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+	@media (hover: hover) { .menu-button:hover { border-color: var(--link-hover-accent); } }
+	.menu-button:active { border-color: var(--link-hover-accent); transform: scale(.96); }
+	.menu-trigger[data-quiet-focus]:focus-visible { outline-color: transparent; }
+	/* anticipation: the strokes gather before the menu goes */
+	.menu-trigger:active .menu-button__icon i { transform: scaleX(.72); }
+
+	/* ---------- the dialog: full screen, its own bar over the page bar ---------- */
+	.menu {
+		position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+		background: transparent; color: var(--text); overflow: hidden; overscroll-behavior: contain;
+	}
+	.menu::backdrop { background: transparent; }
+	.menu__bar {
+		position: absolute; z-index: 3; top: 0; left: 0; right: var(--menu-gutter, 0px); display: flex; align-items: center; gap: var(--space-l);
+		height: var(--nav-height); max-width: var(--width-max); margin: 0 auto; padding: 0 var(--page-pad);
+	}
+	.menu__bar .menu-button { margin-left: auto; }
+	.menu__inks, .menu__ink, .menu__sheet { position: absolute; inset: 0; }
+	.menu__ink { background: var(--tint); }
+	.menu__sheet { background: var(--surface); }
+	.menu__scroll {
+		position: absolute; inset: var(--nav-height) 0 0; display: flex; flex-direction: column; gap: var(--space-xs);
+		overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+		padding: var(--space-xs) var(--page-pad) calc(var(--space-l) + env(safe-area-inset-bottom, 0px));
+	}
+	.menu:focus { outline: none; }
+	/* the doors take whatever height is left, between a floor and a ceiling */
+	/* when the menu is taller than the screen (landscape), the edge fades to say there is more */
+	.menu__scroll.has-more { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent); }
+	.menu__nav { flex: 1 0 auto; display: flex; flex-direction: column; gap: var(--space-xs); }
+	.menu__doors, .menu__more, .menu__profiles { margin: 0; padding: 0; list-style: none; }
+	.menu__doors { flex: 1 0 auto; display: flex; flex-direction: column; gap: var(--space-xs); }
+	.menu__doors li { flex: 1 0 auto; display: flex; min-height: clamp(5rem, 15svh, 10rem); max-height: 13rem; }
+	.menu__more { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs); }
+
+	/* ---------- door bands and tiles ---------- */
+	.menu__door, .menu__tile {
+		position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+		flex: 1 1 auto; padding: var(--space-s) var(--space-m); overflow: hidden;
+		border-radius: var(--radius-img); background: var(--surface-alt); color: var(--palette-paper-100); text-decoration: none;
+		-webkit-tap-highlight-color: transparent; touch-action: manipulation;
+	}
+	.menu__tile { justify-content: flex-end; height: clamp(4.25rem, 11svh, 7.5rem); padding-bottom: var(--space-s); }
+	.menu__art { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+	.menu__art img {
+		position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%;
+		transition: transform 900ms var(--ease-image);
+	}
+	.menu__art img[data-frame] { opacity: 0; }
+	.menu__art::after {
+		content: ""; position: absolute; inset: 0;
+		background:
+			linear-gradient(90deg, color-mix(in oklab, var(--palette-stage-950) 86%, transparent) 0%, color-mix(in oklab, var(--palette-stage-950) 72%, transparent) 42%, color-mix(in oklab, var(--palette-stage-950) 18%, transparent) 78%, transparent 100%),
+			linear-gradient(to top, color-mix(in oklab, var(--palette-stage-950) 45%, transparent), transparent 55%);
+	}
+	/* each door carries its ink as one of the three strokes of the menu button */
+	.menu__door .menu__for { display: flex; align-items: center; gap: 0.625rem; }
+	.menu__door .menu__for::before { content: ""; flex: none; width: 1.125rem; height: 2px; background: var(--tint); }
+	/* the ring: current section and touch, orange like every hover on the site */
+	.menu__door::after, .menu__tile::after {
+		content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none;
+		box-shadow: inset 0 0 0 2px transparent; transition: box-shadow var(--dur-base) var(--ease-standard);
+	}
+	:is(.menu__door, .menu__tile)[aria-current="location"]::after,
+	:is(.menu__door, .menu__tile):is(:active, .is-chosen)::after { box-shadow: inset 0 0 0 2px var(--link-hover-accent); }
+	.menu__for { position: relative; font-size: var(--type-small); line-height: 1.3; color: color-mix(in oklab, var(--palette-paper-100) 90%, transparent); }
+	.menu__title { display: flex; align-items: flex-start; gap: 0.375rem; max-width: 100%; }
+	.menu__name {
+		display: inline-block; font-family: var(--font-display); font-size: clamp(2rem, 9vw, 3.75rem); line-height: 0.9; font-weight: 800;
+		font-stretch: 70%; letter-spacing: var(--track-snug); text-transform: uppercase; text-wrap: balance;
+		transform-origin: 0 100%; transition: font-stretch var(--dur-slow) var(--ease-out-quint);
+	}
+	.menu__tile .menu__name { font-size: clamp(1.375rem, 6.4vw, 2.5rem); }
+	.menu__count { font-family: var(--font-display); font-size: 1.1875rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 0 0.75rem color-mix(in oklab, var(--palette-stage-950) 70%, transparent); }
+	.menu__tile--paper .menu__count { text-shadow: none; }
+	:is(.menu__door, .menu__tile):is(:active, .is-chosen) .menu__name { font-stretch: 100%; }
+	:is(.menu__door, .menu__tile):is(:active, .is-chosen) .menu__art img { transform: scale(1.06); }
+	@media (hover: hover) {
+		:is(.menu__door, .menu__tile):hover::after { box-shadow: inset 0 0 0 2px var(--link-hover-accent); }
+		:is(.menu__door, .menu__tile):hover .menu__name { font-stretch: 100%; }
+		:is(.menu__door, .menu__tile):hover .menu__art img { transform: scale(1.06); }
+	}
+	/* Sketchbook is the paper chapter: pencil on paper */
+	.menu__tile--paper { background: var(--palette-paper-0); color: var(--palette-ink-950); }
+	.menu__tile--paper .menu__art img { left: auto; width: 72%; mix-blend-mode: multiply; object-position: center 40%; }
+	.menu__tile--paper .menu__art::after { background: linear-gradient(90deg, var(--palette-paper-0) 40%, color-mix(in oklab, var(--palette-paper-0) 78%, transparent) 64%, transparent 100%); }
+	.menu__tile--paper:focus-visible { outline-color: var(--focus); }
+	.menu__art img.is-portrait { object-position: center 25%; }
+
+	/* ---------- foot: contact, language, profiles ---------- */
+	.menu__foot {
+		display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-xs) var(--space-xs);
+		padding-top: var(--space-s);
+	}
+	.menu__contact { justify-content: space-between; height: calc(2.75rem + 0.25rem + 2px); padding: 0 var(--space-m) 0 var(--space-l); font-size: 1.0625rem; }
+	.menu__contact-icon { display: inline-flex; }
+	.menu__contact-icon svg { width: 1.25rem; height: 1.25rem; transition: transform var(--dur-slow) var(--ease-out-quint); }
+	.menu__contact:active { background: var(--link-hover-accent); }
+	.menu__contact:is(:active, .is-chosen) .menu__contact-icon svg { transform: translateX(var(--space-xs)); }
+	.lang--menu {
+		position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.125rem; padding: 0.125rem; height: calc(2.75rem + 0.25rem + 2px);
+	}
+	.lang--menu::before {
+		content: ""; position: absolute; top: 0.125rem; bottom: 0.125rem; left: 0.125rem; width: calc((100% - 0.375rem) / 2);
+		border-radius: var(--radius-control); background: var(--accent); transition: transform 450ms var(--ease-out-quint);
+	}
+	.lang--menu:has([data-lang="en"][aria-pressed="true"])::before { transform: translateX(calc(100% + 0.125rem)); }
+	.lang--menu .lang__option { position: relative; height: 100%; min-width: 3rem; font-size: 0.9375rem; }
+	.lang--menu .lang__option[aria-pressed="true"] { background: transparent; color: var(--on-accent); }
+	.menu__profiles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: var(--space-s); }
+	.menu__profiles a {
+		display: inline-flex; align-items: center; gap: 0.125rem; min-height: 2.75rem; color: var(--text-muted); text-decoration: none;
+		font-size: var(--type-small); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 0.3em; text-decoration-thickness: 2px;
+		transition: color var(--dur-base) var(--ease-standard), text-decoration-color var(--dur-base) var(--ease-standard), outline-color var(--dur-fast) var(--ease-standard);
+	}
+	.menu__profiles a:active { color: var(--text); text-decoration-color: var(--link-hover-accent); }
+	@media (hover: hover) { .menu__profiles a:hover { color: var(--text); text-decoration-color: var(--link-hover-accent); } }
+
+	/* ---------- the trip to a section (view transition): the sheet lifts, the word becomes the title ---------- */
+	html:is(.is-menu-open, .is-menu-nav) .chapter { view-transition-name: none; }
+	.is-menu-target, .is-menu-target * { transition: none !important; }
+	:is(.chapter__title, .contact__title).is-menu-target { width: fit-content; justify-self: start; }
+}
+
+/* tablet: bigger bands, room around the words */
+@media (min-width: 600px) and (max-width: 1023.98px) {
+	.menu__door { padding: var(--space-m) var(--space-l); }
+	.menu__tile { padding: var(--space-m) var(--space-l); }
+	.menu__name { font-size: clamp(2.5rem, 7.5vw, 4.5rem); }
+	.menu__tile .menu__name { font-size: clamp(1.75rem, 4.6vw, 2.75rem); }
+	.menu__count { font-size: 1.375rem; }
+	.menu__doors li { max-height: 16rem; }
+	.menu__tile { height: clamp(5rem, 11svh, 9rem); }
+	.menu__profiles { justify-content: flex-start; column-gap: var(--space-l); }
+}
+
+/* phone */
+@media (max-width: 599.98px) {
+	:root { --nav-height: 3.5rem; }
+	.menu__door .menu__name { font-size: clamp(2rem, 9.2vw, 2.75rem); }
+	.menu__for { font-size: 0.9375rem; }
+}
+@media (max-width: 359.98px) {
+	.menu__profiles { column-gap: var(--space-xs); }
+	.menu__profiles a { font-size: 0.875rem; }
+}
+
+/* landscape phones: doors on the left, the rest on the right; scrolls inside if short */
+@media (max-height: 500px) and (max-width: 1023.98px) {
+	.menu__nav { flex: none; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; column-gap: var(--space-xs); }
+	.menu__more { grid-template-columns: minmax(0, 1fr); }
+	.menu__doors li { flex: none; min-height: 0; height: 4.25rem; }
+	.menu__door { padding-block: 0.375rem 0.5rem; }
+	.menu__tile { height: calc((3 * 4.25rem + var(--space-xs)) / 2); }
+	.menu__door .menu__name { font-size: 1.75rem; }
+	.menu__tile .menu__name { font-size: 1.5rem; }
+	.menu__foot { grid-template-columns: auto auto minmax(0, 1fr); padding-top: var(--space-s); }
+	.menu__contact { min-width: 11rem; }
+	.menu__profiles { grid-column: auto; justify-content: flex-end; column-gap: var(--space-m); }
+}
+
+/* The trip to a section (view transition). The old page (the menu) lifts away while the new page is
+   uncovered by the complementary shape, so the two never overlap whatever order the engine stacks them in.
+   The chosen door stays where it was while everything else goes; then its word flies into the section
+   title and its art opens into the feature image. The word swaps images in 140 ms at take-off, while both are the same size: no double text. */
+.is-menu-nav::view-transition-group(root) { animation: none; }
+.is-menu-nav::view-transition-old(root) { mix-blend-mode: normal; animation: menu-lift-old 560ms cubic-bezier(.76, 0, .24, 1) both; }
+.is-menu-nav::view-transition-new(root) { mix-blend-mode: normal; animation: menu-lift-new 560ms cubic-bezier(.76, 0, .24, 1) both; }
+.is-menu-nav::view-transition-group(menu-name), .is-menu-nav::view-transition-group(menu-art) {
+	animation-delay: 200ms; animation-duration: 780ms; animation-timing-function: cubic-bezier(.65, 0, .25, 1); animation-fill-mode: both;
+}
+.is-menu-nav::view-transition-group(menu-name) { z-index: 3; }
+.is-menu-nav::view-transition-old(menu-name), .is-menu-nav::view-transition-new(menu-name) { mix-blend-mode: normal; height: 100%; width: auto; }
+.is-menu-nav::view-transition-old(menu-name) { animation: menu-fade-out 140ms 200ms both; }
+.is-menu-nav::view-transition-new(menu-name) { animation: menu-fade-in 140ms 200ms both; }
+.is-menu-nav::view-transition-group(menu-art) { z-index: 2; overflow: clip; border-radius: var(--radius-img); }
+.is-menu-nav::view-transition-old(menu-art), .is-menu-nav::view-transition-new(menu-art) { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: normal; }
+.is-menu-nav::view-transition-old(menu-art) { animation: menu-fade-out 300ms 560ms both; }
+.is-menu-nav::view-transition-new(menu-art) { animation: menu-fade-in 420ms 220ms both; }
+@keyframes menu-lift-old {
+	0% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+	55% { clip-path: polygon(0% 0%, 100% 0%, 100% 34%, 0% 52%); }
+	100% { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%); }
+}
+@keyframes menu-lift-new {
+	0% { clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%); }
+	55% { clip-path: polygon(0% 52%, 100% 34%, 100% 100%, 0% 100%); }
+	100% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+}
+@keyframes menu-fade-in { from { opacity: 0; } }
+@keyframes menu-fade-out { to { opacity: 0; } }

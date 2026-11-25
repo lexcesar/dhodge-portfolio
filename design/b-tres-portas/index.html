@@ -8,8 +8,8 @@
 	<link rel="alternate" hreflang="pt-BR" href="?lang=pt">
 	<link rel="alternate" hreflang="en" href="?lang=en">
 	<link rel="preload" href="../assets/fonts/anybody-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
-	<link rel="stylesheet" href="style.css?v=7">
-	<script src="../assets/i18n.js?v=6"></script>
+	<link rel="stylesheet" href="style.css?v=8">
+	<script src="../assets/i18n.js?v=8"></script>
 </head>
 <body>
 	<a class="skip" href="#main" data-i18n="skip">Pular para o conteúdo</a>
@@ -31,6 +31,10 @@
 				</div>
 				<a class="button button--primary" href="#contato" data-i18n="contact">Contato</a>
 			</div>
+			<button class="menu-button menu-trigger" type="button" aria-expanded="false" aria-controls="menu" data-menu-open data-i18n-attr="aria-label: menu.open" aria-label="Abrir menu">
+				<span class="menu-button__label" aria-hidden="true"><span data-i18n="menu">Menu</span><span data-i18n="menu.close">Fechar</span></span>
+				<span class="menu-button__icon" aria-hidden="true"><i></i><i></i><i></i></span>
+			</button>
 		</div>
 	</header>
 
@@ -178,6 +182,58 @@
 		</a>
 	</footer>
 
+	<dialog class="menu" id="menu" tabindex="-1" data-menu data-i18n-attr="aria-label: menu.label" aria-label="Menu">
+		<div class="menu__bar">
+			<a class="wordmark" href="#main" data-menu-link="" data-i18n-attr="aria-label: home.label" aria-label="Daniel Hodge, início">Daniel Hodge</a>
+			<button class="menu-button menu__close" type="button" data-menu-close data-i18n-attr="aria-label: menu.close.label" aria-label="Fechar menu">
+				<span class="menu-button__label" aria-hidden="true"><span data-i18n="menu">Menu</span><span data-i18n="menu.close">Fechar</span></span>
+				<span class="menu-button__icon" aria-hidden="true"><i></i><i></i><i></i></span>
+			</button>
+		</div>
+		<div class="menu__inks" aria-hidden="true"><span class="menu__ink is-variant-games"></span><span class="menu__ink is-variant-animacao"></span><span class="menu__ink is-variant-livros"></span></div>
+		<div class="menu__sheet">
+			<div class="menu__scroll" data-menu-scroll>
+				<nav class="menu__nav" data-i18n-attr="aria-label: nav.label" aria-label="Seções">
+					<ul class="menu__doors">
+						<li><a class="menu__door is-variant-games" href="#games" data-menu-link="games-title" data-menu-door="games" data-cursor="enter">
+							<span class="menu__art" data-menu-art></span>
+							<span class="menu__for" data-i18n="door.games.for">Para estúdios de games</span>
+							<span class="menu__title"><span class="menu__name" data-morph data-i18n="nav.games">Games</span><span class="menu__count" data-menu-count="games"></span></span>
+						</a></li>
+						<li><a class="menu__door is-variant-animacao" href="#animacao" data-menu-link="anim-title" data-menu-door="animacao" data-cursor="enter">
+							<span class="menu__art" data-menu-art></span>
+							<span class="menu__for" data-i18n="door.animacao.for">Para produtoras de animação</span>
+							<span class="menu__title"><span class="menu__name" data-morph data-i18n="nav.animacao">Animação</span><span class="menu__count" data-menu-count="animacao"></span></span>
+						</a></li>
+						<li><a class="menu__door is-variant-livros" href="#livros" data-menu-link="books-title" data-menu-door="livros" data-cursor="enter">
+							<span class="menu__art" data-menu-art></span>
+							<span class="menu__for" data-i18n="door.livros.for">Para editoras</span>
+							<span class="menu__title"><span class="menu__name" data-morph data-i18n="nav.livros">Livros infantis</span><span class="menu__count" data-menu-count="livros"></span></span>
+						</a></li>
+					</ul>
+					<ul class="menu__more">
+						<li><a class="menu__tile menu__tile--paper" href="#sketchbook" data-menu-link="sketch-title" data-menu-tile="sketchbook">
+							<span class="menu__art" data-menu-art></span>
+							<span class="menu__title"><span class="menu__name" data-morph data-i18n="nav.sketchbook">Sketchbook</span><span class="menu__count" data-menu-count="sketchbook"></span></span>
+						</a></li>
+						<li><a class="menu__tile" href="#sobre" data-menu-link="about-title" data-menu-tile="sobre">
+							<span class="menu__art" data-menu-art></span>
+							<span class="menu__title"><span class="menu__name" data-morph data-i18n="nav.sobre">Sobre</span></span>
+						</a></li>
+					</ul>
+				</nav>
+				<div class="menu__foot">
+					<a class="button button--primary menu__contact" href="#contato" data-menu-link="contact-title"><span class="menu__contact-name" data-morph data-i18n="contact">Contato</span><span class="menu__contact-icon" data-menu-icon></span></a>
+					<div class="lang lang--menu" role="group" data-i18n-attr="aria-label: lang.label" aria-label="Idioma">
+						<button class="lang__option" type="button" data-lang="pt" lang="pt-BR" aria-pressed="true">PT</button>
+						<button class="lang__option" type="button" data-lang="en" lang="en" aria-pressed="false">EN</button>
+					</div>
+					<ul class="menu__profiles" data-menu-profiles data-i18n-attr="aria-label: menu.profiles" aria-label="Perfis"></ul>
+				</div>
+			</div>
+		</div>
+	</dialog>
+
 	<dialog class="viewer" aria-labelledby="viewer-title">
 		<div class="viewer__frame">
 			<header class="viewer__head">
@@ -214,5 +270,6 @@
 	<script src="motion.js?v=6"></script>
 	<script src="portrait.js?v=6"></script>
 	<script src="main.js?v=6"></script>
+	<script src="menu.js?v=8"></script>
 </body>
 </html>

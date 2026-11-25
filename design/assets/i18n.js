@@ -48,6 +48,7 @@
 			'source.behance': 'Ver no Behance', 'source.artstation': 'Ver no ArtStation',
 			close: 'Fechar', 'step.prev': 'Quadro anterior', 'step.next': 'Próximo quadro', 'steps.label': 'Etapas',
 			'cursor.view': 'Ver', 'cursor.process': 'Processo', 'cursor.enter': 'Entrar', 'cursor.photo': 'Próxima', 'cursor.play': 'Assistir',
+			menu: 'Menu', 'menu.label': 'Menu', 'menu.open': 'Abrir menu', 'menu.close': 'Fechar', 'menu.close.label': 'Fechar menu', 'menu.profiles': 'Perfis',
 		},
 		en: {
 			'meta.title': 'Daniel Hodge, illustrator and 2D animator',
@@ -93,6 +94,7 @@
 			'source.behance': 'See on Behance', 'source.artstation': 'See on ArtStation',
 			close: 'Close', 'step.prev': 'Previous frame', 'step.next': 'Next frame', 'steps.label': 'Steps',
 			'cursor.view': 'View', 'cursor.process': 'Process', 'cursor.enter': 'Enter', 'cursor.photo': 'Next', 'cursor.play': 'Play',
+			menu: 'Menu', 'menu.label': 'Menu', 'menu.open': 'Open menu', 'menu.close': 'Close', 'menu.close.label': 'Close menu', 'menu.profiles': 'Profiles',
 		},
 	};
 
