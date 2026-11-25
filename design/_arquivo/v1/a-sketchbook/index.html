@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-img="../../../assets/img/">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Daniel Hodge, ilustrador e animador 2D</title>
+	<meta name="description" content="Portfólio de Daniel Hodge, ilustrador e animador 2D: games, animação e livros infantis, da miniatura à cor final.">
+	<link rel="preload" href="../assets/fonts/bricolage-grotesque-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<a class="skip" href="#main">Pular para o conteúdo</a>
+
+	<header class="topbar">
+		<div class="topbar__inner">
+			<a class="wordmark" href="#top" aria-label="Daniel Hodge, início">Daniel Hodge</a>
+			<nav class="nav" aria-label="Seções">
+				<a href="#games">Games</a>
+				<a href="#animacao">Animação</a>
+				<a href="#livros">Livros infantis</a>
+				<a href="#sketchbook">Sketchbook</a>
+				<a href="#sobre">Sobre</a>
+			</nav>
+			<a class="button button--primary" href="#contato">Contato</a>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="intro" id="top" aria-labelledby="intro-title">
+			<div class="intro__text">
+				<h1 id="intro-title" class="intro__title">Daniel Hodge, ilustrador e animador&nbsp;2D</h1>
+				<p class="intro__lead" data-profile="bio"></p>
+				<div class="intro__actions">
+					<a class="button button--primary" href="#games">Ver os trabalhos</a>
+					<a class="link" href="#sketchbook">Abrir o sketchbook</a>
+				</div>
+			</div>
+
+			<figure class="stage" aria-labelledby="stage-caption">
+				<div class="stage__board">
+					<div class="stage__frames" data-stage-frames></div>
+				</div>
+				<div class="stage__controls">
+					<div class="stage__steps" role="group" aria-label="Etapas do processo" data-stage-steps></div>
+					<input class="stage__range" type="range" min="0" max="300" value="0" step="1" aria-label="Passar da miniatura à cor" data-stage-range>
+				</div>
+				<figcaption id="stage-caption" class="stage__caption">
+					<span>Polar Bearfolk Ranger, 2022. Da miniatura à cor, na mesma peça.</span>
+					<button class="link" type="button" data-open="bear">Ver em tela cheia</button>
+				</figcaption>
+			</figure>
+		</section>
+
+		<section class="section" id="games" aria-labelledby="games-title">
+			<header class="section__head">
+				<h2 id="games-title" class="section__title">Games</h2>
+				<p class="section__lead">Personagens, splash e arte de card. Oito anos em estúdio, entre o Rio e Kuala Lumpur.</p>
+			</header>
+			<h3 class="subhead">Cards</h3>
+			<div class="row row--cards" data-list="cards"></div>
+			<h3 class="subhead">Personagens</h3>
+			<div class="masonry" data-list="games"></div>
+		</section>
+
+		<section class="section" id="animacao" aria-labelledby="anim-title">
+			<header class="section__head">
+				<h2 id="anim-title" class="section__title">Animação</h2>
+				<p class="section__lead">Do design ao frame final: storyboard, layout de câmera, cenário e personagem.</p>
+			</header>
+			<ol class="film" data-film="robot" aria-label="Finally, we found a giant robot!, etapas"></ol>
+			<div class="split">
+				<div class="row row--two" data-list="animacao"></div>
+				<div class="reel">
+					<h3 class="subhead">Para a TV</h3>
+					<ul class="reel__list" data-profile="reel"></ul>
+				</div>
+			</div>
+		</section>
+
+		<section class="section" id="livros" aria-labelledby="books-title">
+			<header class="section__head">
+				<h2 id="books-title" class="section__title">Livros infantis</h2>
+				<p class="section__lead">O abecedário do Tito Club, uma letra por página, e personagens para ler em voz alta.</p>
+			</header>
+			<div class="abc" data-list="abc"></div>
+			<div class="masonry" data-list="livros"></div>
+		</section>
+
+		<section class="section section--board" id="sketchbook" aria-labelledby="sketch-title">
+			<header class="section__head">
+				<h2 id="sketch-title" class="section__title">Sketchbook</h2>
+				<p class="section__lead">Miniaturas, estudos de pose, storyboard e lápis de cor. Antes da cor, a peça já está resolvida aqui.</p>
+				<div class="rail-nav">
+					<button class="icon-button" type="button" data-rail="-1" aria-label="Folhas anteriores"></button>
+					<button class="icon-button" type="button" data-rail="1" aria-label="Próximas folhas"></button>
+				</div>
+			</header>
+			<div class="rail" data-list="sketchbook" tabindex="0" aria-label="Folhas do sketchbook, role na horizontal"></div>
+		</section>
+
+		<section class="section about" id="sobre" aria-labelledby="about-title">
+			<h2 id="about-title" class="section__title">Sobre</h2>
+			<p class="about__bio"><strong>Daniel Hodge</strong>, ilustrador e animador 2D. <span data-profile="bio"></span></p>
+			<table class="timeline">
+				<caption class="sr-only">Trajetória</caption>
+				<tbody data-profile="timeline"></tbody>
+			</table>
+		</section>
+
+		<section class="section contact" id="contato" aria-labelledby="contact-title">
+			<h2 id="contact-title" class="contact__title">Contato</h2>
+			<p class="contact__lead">Estúdios de games, produtoras e editoras: a conversa começa por qualquer um destes.</p>
+			<ul class="contact__links" data-profile="links"></ul>
+		</section>
+	</main>
+
+	<footer class="footer">
+		<span>© 2026 Daniel Hodge. Fan art marcada como fan art; personagens pertencem aos seus donos.</span>
+		<a class="link" href="#top">Voltar ao topo</a>
+	</footer>
+
+	<dialog class="viewer" aria-labelledby="viewer-title">
+		<div class="viewer__frame">
+			<header class="viewer__head">
+				<div>
+					<h2 id="viewer-title" class="viewer__title"></h2>
+					<p class="viewer__meta"></p>
+				</div>
+				<a class="link viewer__source" target="_blank" rel="noopener"></a>
+				<button class="icon-button viewer__close" type="button" aria-label="Fechar" autofocus></button>
+			</header>
+			<div class="viewer__stage">
+				<button class="icon-button viewer__prev" type="button" aria-label="Etapa anterior"></button>
+				<img class="viewer__img" alt="">
+				<button class="icon-button viewer__next" type="button" aria-label="Próxima etapa"></button>
+			</div>
+			<nav class="viewer__steps" aria-label="Etapas"></nav>
+		</div>
+	</dialog>
+
+	<script src="../assets/works.js"></script>
+	<script src="../assets/common.js"></script>
+	<script src="main.js"></script>
+</body>
+</html>

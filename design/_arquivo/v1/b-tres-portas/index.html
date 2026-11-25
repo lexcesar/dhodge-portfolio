@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-img="../../../assets/img/">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Daniel Hodge, ilustrador e animador 2D</title>
+	<meta name="description" content="Portfólio de Daniel Hodge, ilustrador e animador 2D. Games, animação e livros infantis, numa seleção feita para quem chega.">
+	<link rel="preload" href="../assets/fonts/anybody-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<a class="skip" href="#main">Pular para o conteúdo</a>
+
+	<header class="topbar">
+		<div class="topbar__inner">
+			<a class="wordmark" href="./" aria-label="Daniel Hodge, início">Daniel Hodge</a>
+			<nav class="nav" aria-label="Seções">
+				<a href="#games">Games</a>
+				<a href="#animacao">Animação</a>
+				<a href="#livros">Livros infantis</a>
+				<a href="#sketchbook">Sketchbook</a>
+				<a href="#sobre">Sobre</a>
+			</nav>
+			<div class="topbar__actions">
+				<button class="button button--ghost" type="button" data-tray-toggle aria-controls="tray" aria-expanded="false">
+					Seleção <span class="count" data-count>0</span>
+				</button>
+				<a class="button button--primary" href="#contato">Contato</a>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<section class="intro" aria-labelledby="intro-title">
+			<div class="intro__band">
+				<h1 id="intro-title" class="intro__title">Daniel Hodge, ilustrador e animador&nbsp;2D</h1>
+				<p class="intro__lead" data-profile="bio"></p>
+			</div>
+			<nav class="doors" aria-label="Escolha por onde começar">
+				<a class="door is-variant-games" href="?para=games#games" data-door="games">
+					<img class="door__img" src="../../../assets/img/bear-final.jpg" alt="" decoding="async">
+					<span class="door__for">Para estúdios de games</span>
+					<span class="door__name">Games</span>
+					<span class="door__count" data-door-count="games"></span>
+				</a>
+				<a class="door is-variant-animacao" href="?para=animacao#animacao" data-door="animacao">
+					<img class="door__img" src="../../../assets/img/robot-5.jpg" alt="" decoding="async">
+					<span class="door__for">Para produtoras de animação</span>
+					<span class="door__name">Animação</span>
+					<span class="door__count" data-door-count="animacao"></span>
+				</a>
+				<a class="door is-variant-livros" href="?para=livros#livros" data-door="livros">
+					<img class="door__img" src="../../../assets/img/tito-2.jpg" alt="" decoding="async">
+					<span class="door__for">Para editoras</span>
+					<span class="door__name">Livros infantis</span>
+					<span class="door__count" data-door-count="livros"></span>
+				</a>
+			</nav>
+		</section>
+
+		<p class="order-note" data-order-note hidden aria-live="polite"></p>
+
+		<div class="chapters" data-chapters>
+			<section class="chapter chapter--selection" id="selecao" data-chapter="selecao" aria-labelledby="sel-title" hidden>
+				<header class="chapter__head">
+					<h2 id="sel-title" class="chapter__title">Uma seleção para você</h2>
+					<p class="chapter__lead">O Daniel separou estas peças. O portfólio inteiro continua logo abaixo.</p>
+				</header>
+				<div class="shelf" data-list="selecao"></div>
+			</section>
+
+			<section class="chapter is-variant-games" id="games" data-chapter="games" aria-labelledby="games-title">
+				<header class="chapter__head">
+					<h2 id="games-title" class="chapter__title">Games</h2>
+					<p class="chapter__lead">Personagens, splash e arte de card. Oito anos em estúdio, entre o Rio e Kuala Lumpur.</p>
+				</header>
+				<div class="feature" data-feature="bear"></div>
+				<div class="shelf" data-list="games"></div>
+			</section>
+
+			<section class="chapter is-variant-animacao" id="animacao" data-chapter="animacao" aria-labelledby="anim-title">
+				<header class="chapter__head">
+					<h2 id="anim-title" class="chapter__title">Animação</h2>
+					<p class="chapter__lead">Do design ao frame final: storyboard, layout de câmera, cenário e personagem.</p>
+				</header>
+				<div class="feature" data-feature="robot"></div>
+				<div class="split">
+					<div class="shelf" data-list="animacao"></div>
+					<div class="reel">
+						<h3 class="reel__title">Para a TV</h3>
+						<ul class="reel__list" data-profile="reel"></ul>
+					</div>
+				</div>
+			</section>
+
+			<section class="chapter is-variant-livros" id="livros" data-chapter="livros" aria-labelledby="books-title">
+				<header class="chapter__head">
+					<h2 id="books-title" class="chapter__title">Livros infantis</h2>
+					<p class="chapter__lead">O abecedário do Tito Club, uma letra por página, e personagens para ler em voz alta.</p>
+				</header>
+				<div class="feature" data-feature="tito"></div>
+				<div class="shelf" data-list="livros"></div>
+			</section>
+		</div>
+
+		<section class="chapter chapter--paper" id="sketchbook" aria-labelledby="sketch-title">
+			<header class="chapter__head">
+				<h2 id="sketch-title" class="chapter__title">Sketchbook</h2>
+				<p class="chapter__lead">Miniaturas, estudos de pose, storyboard e lápis de cor: a peça resolvida antes da cor.</p>
+			</header>
+			<div class="shelf" data-list="sketchbook"></div>
+		</section>
+
+		<section class="chapter about" id="sobre" aria-labelledby="about-title">
+			<header class="chapter__head">
+				<h2 id="about-title" class="chapter__title">Sobre</h2>
+				<p class="about__bio"><strong>Daniel Hodge</strong>, ilustrador e animador 2D. <span data-profile="bio"></span></p>
+			</header>
+			<ol class="timeline" data-profile="timeline"></ol>
+		</section>
+
+		<section class="chapter contact" id="contato" aria-labelledby="contact-title">
+			<h2 id="contact-title" class="contact__title">Contato</h2>
+			<ul class="contact__links" data-profile="links"></ul>
+		</section>
+	</main>
+
+	<footer class="footer">
+		<span>© 2026 Daniel Hodge. Fan art marcada como fan art; personagens pertencem aos seus donos.</span>
+	</footer>
+
+	<aside class="tray" id="tray" aria-label="Sua seleção" data-tray>
+		<p class="tray__text"><strong data-count>0</strong> <span data-tray-label>peças na seleção</span></p>
+		<div class="tray__thumbs" data-tray-thumbs></div>
+		<button class="button button--primary" type="button" data-copy>Copiar link da seleção</button>
+		<button class="button button--ghost" type="button" data-clear>Limpar</button>
+		<p class="tray__status" role="status" data-copy-status></p>
+	</aside>
+
+	<dialog class="viewer" aria-labelledby="viewer-title">
+		<div class="viewer__frame">
+			<header class="viewer__head">
+				<div>
+					<h2 id="viewer-title" class="viewer__title"></h2>
+					<p class="viewer__meta"></p>
+				</div>
+				<a class="link viewer__source" target="_blank" rel="noopener"></a>
+				<button class="icon-button viewer__close" type="button" aria-label="Fechar" autofocus></button>
+			</header>
+			<div class="viewer__stage">
+				<button class="icon-button viewer__prev" type="button" aria-label="Etapa anterior"></button>
+				<img class="viewer__img" alt="">
+				<button class="icon-button viewer__next" type="button" aria-label="Próxima etapa"></button>
+			</div>
+			<nav class="viewer__steps" aria-label="Etapas"></nav>
+		</div>
+	</dialog>
+
+	<script src="../assets/works.js"></script>
+	<script src="../assets/common.js"></script>
+	<script src="main.js"></script>
+</body>
+</html>
