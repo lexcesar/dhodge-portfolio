@@ -13,6 +13,23 @@ type Start = { query: string; studioUrl: string; onData: (data: unknown) => void
 const SKIP = new Set(['id', 'key', 'section', 'featured', 'related', 'url', 'orig', 'video', 'source', 'year', 'workYear', 'w', 'h']);
 
 /* Values the site uses for logic, without the invisible stega characters. */
+/* The Studio tells the perspective once, when it changes, and not again to a page that reconnects after a reload:
+   remember it for the session (Presentation's own ?sanity-preview-perspective= first, drafts by default). */
+const PERSPECTIVE_KEY = 'sanity-live-text:perspective';
+type Perspective = 'drafts' | 'published' | string[];
+export function rememberedPerspective(): Perspective {
+	try {
+		const asked = new URLSearchParams(location.search).get('sanity-preview-perspective');
+		if (asked) return asked.includes(',') ? asked.split(',') : (asked as Perspective);
+		const kept = sessionStorage.getItem(PERSPECTIVE_KEY);
+		if (kept) return JSON.parse(kept) as Perspective;
+	} catch { /* storage blocked */ }
+	return 'drafts';
+}
+export function keepPerspective(p: unknown): void {
+	try { sessionStorage.setItem(PERSPECTIVE_KEY, JSON.stringify(p)); } catch { /* storage blocked */ }
+}
+
 export const clean = <T>(v: T): T => stegaClean(v) as T;
 /* data-sanity value for things stega cannot mark (images). */
 export const attrFor = (studioUrl: string) => (id: string, type: string, path: string) => createDataAttribute({ baseUrl: studioUrl, id, type, path }).toString();
@@ -23,7 +40,7 @@ export function start({ query, studioUrl, onData, onError }: Start) {
 		dataset: 'production',
 		apiVersion: '2025-02-19',
 		useCdn: true,
-		perspective: 'published',
+		perspective: rememberedPerspective() as 'drafts',
 		stega: {
 			enabled: true,
 			studioUrl,
@@ -41,9 +58,12 @@ export function start({ query, studioUrl, onData, onError }: Start) {
 		client,
 		onConnect: () => { debug.connected = true; },
 		onDisconnect: () => { debug.connected = false; },
-		onPerspective: (p) => { debug.perspective = p; },
+		onPerspective: (p) => { debug.perspective = p; keepPerspective(p); },
 	});
-	store.createFetcherStore(query).subscribe((state) => {
+	/* A query of its own per page load: with the same query and params, the Studio (sanity 6.25) goes on answering the
+	   page that was there before a reload or a ?para= navigation, and edits stop showing. */
+	const load = Math.random().toString(36).slice(2);
+	store.createFetcherStore(query.replace(/\}\s*$/, ', "_load": $load }'), { load }).subscribe((state) => {
 		if (state.error) onError(state.error);
 		else if (state.data) { debug.updates = Number(debug.updates) + 1; debug.perspective = state.perspective ?? debug.perspective; onData(state.data); }
 	});

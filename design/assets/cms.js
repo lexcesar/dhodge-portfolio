@@ -135,12 +135,12 @@
 		/* Visual editing: first result boots the page; every later one (an edit in the Studio) re-renders it. */
 		const css = document.createElement('link');
 		css.rel = 'stylesheet';
-		css.href = new URL('preview.css?v=2', me.src).href;
+		css.href = new URL('preview.css?v=3', me.src).href;
 		document.head.append(css);
 		let booted = false;
 		let last = '';
 		const timer = setTimeout(() => { if (!booted) { booted = true; fallback(new Error('preview: no data')); } }, TIMEOUT * 2);
-		import(new URL('preview.js?v=2', me.src).href).then((mod) => {
+		import(new URL('preview.js?v=3', me.src).href).then((mod) => {
 			P = { clean: mod.clean, attr: mod.attrFor(studioUrl) };
 			mod.start({
 				query: QUERY,
