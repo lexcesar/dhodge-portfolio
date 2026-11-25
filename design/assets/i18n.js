@@ -129,11 +129,20 @@
 		const v = STR[lang][key] ?? STR.pt[key] ?? key;
 		return typeof v === 'function' ? v(...args) : v;
 	};
-	/* Localized value: a { pt, en } object, or a Portuguese string. */
-	const L = (v) => (v && typeof v === 'object' ? v[lang] ?? v.pt : v);
-	const kind = (k) => (lang === 'en' ? KIND[k] || k : k);
-	const step = (s) => (lang === 'en' ? STEP[s] || s : s);
-	const title = (w) => (lang === 'en' ? TITLE[w.id] || w.title : w.title);
+	/* Localized value: a { pt, en } object (Sanity; an empty en falls back to pt), or a Portuguese string. */
+	const isLoc = (v) => v && typeof v === 'object';
+	const L = (v) => (isLoc(v) ? v[lang] || v.pt || '' : v ?? '');
+	const kind = (k) => (isLoc(k) ? L(k) : lang === 'en' ? KIND[k] || k || '' : k || '');
+	const step = (s) => (isLoc(s) ? L(s) : lang === 'en' ? STEP[s] || s || '' : s || '');
+	const title = (w) => (isLoc(w.title) ? L(w.title) : lang === 'en' ? TITLE[w.id] || w.title || '' : w.title || '');
+	/* Content is editable in the Studio now: anything that is not our own markup is escaped before it
+	   goes into innerHTML or an attribute. */
+	const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+	/* Strings that come from the CMS (section leads): { pt: { key: value }, en: { … } }. */
+	const extend = (more) => Object.entries(more).forEach(([l, map]) => {
+		if (!STR[l]) return;
+		Object.entries(map).forEach(([k, v]) => { STR[l][k] = esc(v); }); /* data-i18n writes innerHTML */
+	});
 
 	/* Static text: data-i18n="key" (innerHTML), data-i18n-attr="attr:key; attr:key". */
 	const apply = (root = document) => {
@@ -161,5 +170,5 @@
 		listeners.forEach((fn) => fn(lang));
 	};
 
-	window.I18N = { get lang() { return lang; }, t, L, kind, step, title, apply, set, onChange: (fn) => listeners.add(fn) };
+	window.I18N = { get lang() { return lang; }, t, L, kind, step, title, esc, extend, apply, set, onChange: (fn) => listeners.add(fn) };
 })();

@@ -30,14 +30,22 @@
 
 	/* ---------- content from the site's own data ---------- */
 	const doorImg = (key) => document.querySelector(`.door[data-door="${key}"] .door__img`)?.getAttribute('src');
-	const stepsOf = (w) => (w.steps || []).map(([, n]) => n).filter((n) => n !== w.img);
+	const stepsOf = (w) => (w?.steps || []).map(([, n]) => n).filter((n) => n !== w.img);
+	/* The featured work of each door (Studio or works.js), else the section's first work. */
+	const lead = (key) => DH.featured(key) || WORKS.find((w) => w.section === key);
+	const doorArt = (key) => {
+		const w = lead(key);
+		const rel = DH.related(key);
+		/* related works (Tito's alphabet pages) flip instead of process frames, one per page */
+		const frames = rel.length ? rel.slice(0, 4).map((x) => x.img) : stepsOf(w);
+		return { final: doorImg(key) || (w ? src(w.img, 1200) : ''), frames: frames.map((n) => src(n, 1200)) };
+	};
 	const ART = {
-		games: { final: doorImg('games') || src(byId.bear.img), frames: stepsOf(byId.bear).map(src) },
-		animacao: { final: doorImg('animacao') || src(byId.robot.img), frames: stepsOf(byId.robot).map(src) },
-		/* no process frames for Tito: the alphabet pages flip instead, one letter per page */
-		livros: { final: doorImg('livros') || src(byId.tito.img), frames: WORKS.filter((w) => w.id.startsWith('abc-')).slice(0, 4).map((w) => src(w.img)) },
-		sketchbook: { final: src((byId['sk-witch'] || WORKS.find((w) => w.section === 'sketchbook')).img) },
-		sobre: { final: src(PROFILE.photos[0].img), portrait: true },
+		games: doorArt('games'),
+		animacao: doorArt('animacao'),
+		livros: doorArt('livros'),
+		sketchbook: { final: ((w) => (w ? src(w.img, 1200) : ''))(byId['sk-witch'] || WORKS.find((w) => w.section === 'sketchbook')) },
+		sobre: { final: src(PROFILE.photos[0].img, 1200), portrait: true },
 	};
 
 	const counts = () => $$('[data-menu-count]').forEach((el) => {
@@ -45,17 +53,23 @@
 		el.innerHTML = `<span aria-hidden="true">${n}</span><span class="sr-only">, ${t('works', n)}</span>`;
 	});
 	$('[data-menu-profiles]').innerHTML = PROFILE.links
-		.map(([label, href]) => `<li><a href="${href}" target="_blank" rel="noopener">${label}</a></li>`).join('');
+		.map(([label, href]) => `<li><a href="${I18N.esc(href)}" target="_blank" rel="noopener">${I18N.esc(label)}</a></li>`).join('');
 	$('[data-menu-icon]').innerHTML = icon.next;
 	counts();
 	I18N.onChange(counts);
 
 	/* Art is built lazily (idle time or the first touch on the button): the dialog is not rendered until
 	   then, and the process frames are a few hundred KB. Frames that are not decoded in time are skipped. */
+	/* Two steps: the finals (small, mostly already loaded by the page), then the process frames. Reduced motion
+	   never flips, so it never fetches frames. */
 	let built = false;
-	const build = () => {
-		if (built) return;
+	let framed = false;
+	const build = (withFrames = true) => {
+		withFrames = withFrames && !reduced();
+		if (built && (framed || !withFrames)) return;
+		const first = !built;
 		built = true;
+		framed = withFrames;
 		bands.forEach((a) => {
 			const art = ART[a.dataset.menuDoor || a.dataset.menuTile];
 			const box = $('[data-menu-art]', a);
@@ -68,18 +82,30 @@
 				el.src = url;
 				return el;
 			};
+			const frames = withFrames ? (art.frames || []).map((u, k) => img(u, k)).reverse() : [];
 			/* final at the bottom, first frame on top */
-			box.replaceChildren(img(art.final), ...(art.frames || []).map((u, k) => img(u, k)).reverse());
+			if (first) box.replaceChildren(...(art.final ? [img(art.final)] : []), ...frames);
+			else box.append(...frames);
 		});
 	};
 	const warm = () => build();
 	trigger.addEventListener('pointerdown', warm, { once: true });
 	trigger.addEventListener('focus', warm, { once: true });
-	window.addEventListener('load', () => {
-		if (!mqMenu.matches || navigator.connection?.saveData) return;
-		if (window.requestIdleCallback) window.requestIdleCallback(warm, { timeout: 4000 });
-		else setTimeout(warm, 1500);
-	});
+	/* Data the user asked us to save: Save-Data, prefers-reduced-data, a 2G link. Safari exposes none of
+	   these (iOS Low Data Mode is invisible to pages), so there the frames still load once the page is idle. */
+	const thrifty = () => {
+		const c = navigator.connection;
+		return !!(c?.saveData || /(^|-)2g$/.test(c?.effectiveType || '') || window.matchMedia('(prefers-reduced-data: reduce)').matches);
+	};
+	/* After the page's own images. This script may run after the load event (cms.js injects it), so check. */
+	const afterLoad = () => {
+		if (!mqMenu.matches) return;
+		const idle = () => build(!thrifty());
+		if (window.requestIdleCallback) window.requestIdleCallback(idle, { timeout: 4000 });
+		else setTimeout(idle, 3000);
+	};
+	if (document.readyState === 'complete') afterLoad();
+	else window.addEventListener('load', afterLoad, { once: true });
 	/* iOS only paints :active when a touch listener exists */
 	document.addEventListener('touchstart', () => {}, { passive: true });
 
@@ -102,7 +128,7 @@
 
 	/* The feature images below each door title are lazy; start them while the menu is up so the art can
 	   morph into a decoded picture. */
-	const warmFeatures = () => document.querySelectorAll('.feature__img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
+	const warmFeatures = () => { if (!thrifty()) document.querySelectorAll('.feature__img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }); };
 
 	/* ---------- choreography ---------- */
 	const EASE = {
@@ -294,8 +320,20 @@
 		settle(reduced() ? fade(-1) : closeChoreo()).then((ok) => ok && finishClose());
 	};
 
-	trigger.addEventListener('click', open);
-	closeBtn.addEventListener('click', (e) => (state === 'closing' ? open(e) : close({ pointer: e.detail > 0 })));
+	/* The trigger and the close button sit on the same pixel: an impatient double tap would open and close
+	   (or close and reopen). A second tap within DOUBLE ms is ignored; keys are never ignored. */
+	const DOUBLE = 350;
+	let lastTap = -Infinity;
+	const tap = (e, fn) => {
+		if (e.detail > 0) {
+			const now = performance.now();
+			if (now - lastTap < DOUBLE) return;
+			lastTap = now;
+		}
+		fn();
+	};
+	trigger.addEventListener('click', (e) => tap(e, () => open(e)));
+	closeBtn.addEventListener('click', (e) => tap(e, () => (state === 'closing' ? open(e) : close({ pointer: e.detail > 0 }))));
 	dlg.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
 	/* closed by the browser without us (second Esc, etc.): sync */
 	dlg.addEventListener('close', () => { if (state !== 'closed') { refocus = true; byPointer = false; finishClose(); } });
@@ -321,6 +359,9 @@
 		window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
 		root.style.scrollBehavior = '';
 		history.replaceState(null, '', a.hash);
+		focusOn(section);
+	};
+	const focusOn = (section) => {
 		if (!section.hasAttribute('tabindex')) section.setAttribute('tabindex', '-1');
 		section.focus({ preventScroll: true });
 	};
@@ -339,13 +380,19 @@
 			await whenClosed();
 			navigating = false;
 			if (reduced()) land(a, section, target);
-			else { history.replaceState(null, '', a.hash); window.Motion?.scrollTo(target || section); section.focus?.({ preventScroll: true }); }
+			else { history.replaceState(null, '', a.hash); window.Motion?.scrollTo(target || section); focusOn(section); }
 			return;
 		}
 
 		navigating = true;
 		a.classList.add('is-chosen'); /* anticipation: the word stretches before it flies */
 		await wait(170);
+		/* closed (or the window grew past the menu) during the anticipation: stay put */
+		if (state !== 'open' && state !== 'opening') {
+			a.classList.remove('is-chosen');
+			navigating = false;
+			return;
+		}
 		const name = a.querySelector('[data-morph]');
 		const art = a.dataset.menuDoor ? a : null; /* the whole band: art, line and count travel together */
 		const feature = art ? section.querySelector('.feature') : null;
@@ -386,7 +433,7 @@
 	};
 
 	$$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
-		if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+		if (e.metaKey || e.ctrlKey) return; /* new tab */
 		e.preventDefault();
 		go(a);
 	}));

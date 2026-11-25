@@ -1,9 +1,22 @@
 /* Shared helpers: image path, work card (hover flipbook), gallery viewer (shared-element morph, frame transitions). */
 (() => {
-	const { t, title, kind, step } = window.I18N;
+	const { t, title, kind, step, esc } = window.I18N;
 	const BASE = document.documentElement.dataset.img || '../assets/img/';
-	const src = (name) => `${BASE}${name}.jpg`;
+	/* Sanity images come from the CDN (WebP/AVIF where supported, never upscaled); works.js names are local files. */
+	const CMS_IMG = window.DH_IMG || {};
+	const src = (name, w = 1800) => (CMS_IMG[name] ? `${CMS_IMG[name].url}?w=${w}&fit=max&auto=format` : `${BASE}${name}.jpg`);
 	const byId = Object.fromEntries(window.WORKS.map((w) => [w.id, w]));
+	/* Featured work per section: chosen in the Studio (window.SECTIONS) or, with works.js, the original picks. */
+	const FEATURED = { games: 'bear', animacao: 'robot', livros: 'tito' };
+	const featured = (section) => {
+		const pick = window.SECTIONS ? window.SECTIONS[section]?.featured : FEATURED[section];
+		const w = pick && byId[pick];
+		return w && w.section === section ? w : null;
+	};
+	const related = (section) => {
+		const ids = window.SECTIONS ? window.SECTIONS[section]?.related || [] : section === 'livros' ? window.WORKS.filter((w) => w.id.startsWith('abc-')).map((w) => w.id) : [];
+		return ids.map((x) => byId[x]).filter((w) => w && w.section === section);
+	};
 	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	const icon = {
@@ -33,7 +46,7 @@
 	const hasSteps = (w) => Array.isArray(w.steps) && w.steps.length > 1;
 
 	const frames = (w) => (w.steps && w.steps.length ? w.steps : [['Final', w.img]]);
-	const imgName = (el) => (el?.getAttribute('src') || '').split('/').pop().replace('.jpg', '');
+	const imgName = (el) => (el?.getAttribute('src') || '').split('?')[0].split('/').pop().replace(/\.\w+$/, '');
 	const preload = (name) => { const i = new Image(); i.src = src(name); return i; };
 
 	/* Hover flipbook: a card with process steps plays them like a pencil test. */
@@ -76,15 +89,15 @@
 		el.dataset.id = w.id;
 		el.dataset.reveal = '';
 		el.style.setProperty('--work-ratio', `${w.w} / ${w.h}`);
-		const name = title(w);
+		const name = esc(title(w));
 		el.innerHTML = `
 			<button class="work__open" type="button" data-cursor="${hasSteps(w) ? 'process' : 'view'}" aria-label="${t('open', name)}${hasSteps(w) ? t('open.process') : ''}">
-				<img class="work__img" src="${src(w.img)}" alt="${name}, ${kind(w.kind).toLowerCase()}" width="${w.w}" height="${w.h}" loading="lazy" decoding="async">
+				<img class="work__img" src="${src(w.img, 1200)}" alt="${name}, ${esc(kind(w.kind).toLowerCase())}" width="${w.w}" height="${w.h}" loading="lazy" decoding="async">
 			</button>
 			<figcaption class="work__caption">
 				<span class="work__title">${name}</span>
-				<span class="work__meta">${meta(w)}</span>
-				${w.fan ? `<span class="work__fan">${t('fan.badge', w.fan)}</span>` : ''}
+				<span class="work__meta">${esc(meta(w))}</span>
+				${w.fan ? `<span class="work__fan">${t('fan.badge', esc(w.fan))}</span>` : ''}
 				${hasSteps(w) ? `<span class="work__steps">${icon.steps}${t('steps', w.steps.length)}</span>` : ''}
 			</figcaption>`;
 		const img = el.querySelector('img');
@@ -125,13 +138,14 @@
 		v.title.textContent = title(current);
 		v.meta.textContent = `${meta(current)}${current.fan ? ` · ${t('fan.of', current.fan)}` : ''}`;
 		v.count.innerHTML = `<span>${t(`nav.${current.section}`)}</span> <span class="viewer__count-n">${list.indexOf(current) + 1}/${list.length}</span>`;
-		v.source.href = current.source;
-		v.source.textContent = current.source.includes('behance') ? t('source.behance') : t('source.artstation');
+		v.source.hidden = !current.source;
+		v.source.href = current.source || '#';
+		v.source.textContent = (current.source || '').includes('behance') ? t('source.behance') : t('source.artstation');
 		const fr = frames(current);
 		v.steps.innerHTML = fr.length > 1
 			? fr.map(([label, name], k) => `<button type="button" class="viewer__step" data-step="${k}">
-				<img class="viewer__thumb" src="${src(name)}" alt="" loading="lazy" decoding="async">
-				<span class="viewer__step-label"><span class="viewer__step-n">${k + 1}</span>${step(label)}</span></button>`).join('')
+				<img class="viewer__thumb" src="${src(name, 480)}" alt="" loading="lazy" decoding="async">
+				<span class="viewer__step-label"><span class="viewer__step-n">${k + 1}</span>${esc(step(label))}</span></button>`).join('')
 			: '';
 		v.steps.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => go(current, +b.dataset.step)));
 		v.steps.hidden = fr.length < 2;
@@ -282,5 +296,5 @@
 		window.addEventListener('scroll', onScroll, { passive: true });
 	}
 
-	window.DH = { src, byId, card, openViewer, fadeIn, icon, transition, reduced };
+	window.DH = { src, byId, featured, related, imgName, card, openViewer, fadeIn, icon, transition, reduced };
 })();

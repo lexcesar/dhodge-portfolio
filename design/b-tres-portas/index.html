@@ -3,13 +3,17 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Content comes from the Studio: no inline script or handler can run, whatever ends up in the text. -->
+	<meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'; base-uri 'self'">
 	<title>Daniel Hodge, ilustrador e animador 2D</title>
 	<meta name="description" content="Portfólio de Daniel Hodge, ilustrador e animador 2D. Games, animação e livros infantis.">
 	<link rel="alternate" hreflang="pt-BR" href="?lang=pt">
 	<link rel="alternate" hreflang="en" href="?lang=en">
 	<link rel="preload" href="../assets/fonts/anybody-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
 	<link rel="stylesheet" href="style.css?v=8">
-	<script src="../assets/i18n.js?v=8"></script>
+	<link rel="preconnect" href="https://arbdqygj.apicdn.sanity.io" crossorigin>
+	<link rel="preconnect" href="https://cdn.sanity.io">
+	<script src="../assets/i18n.js?v=10"></script>
 </head>
 <body>
 	<a class="skip" href="#main" data-i18n="skip">Pular para o conteúdo</a>
@@ -46,19 +50,19 @@
 			</div>
 			<nav class="doors" data-i18n-attr="aria-label: doors.label" aria-label="Escolha por onde começar">
 				<a class="door is-variant-games" href="?para=games#games" data-door="games" data-cursor="enter">
-					<img class="door__img" src="../assets/img/bear-final.jpg" alt="" decoding="async">
+					<img class="door__img" src="../assets/img/bear-final.jpg" data-key="afea221efa5ac5d7663e0850660629381d97b05f-911x1463" alt="" decoding="async">
 					<span class="door__for" data-i18n="door.games.for">Para estúdios de games</span>
 					<span class="door__name" data-i18n="nav.games">Games</span>
 					<span class="door__count" data-door-count="games"></span>
 				</a>
 				<a class="door is-variant-animacao" href="?para=animacao#animacao" data-door="animacao" data-cursor="enter">
-					<img class="door__img" src="../assets/img/robot-5.jpg" alt="" decoding="async">
+					<img class="door__img" src="../assets/img/robot-5.jpg" data-key="7fae1150ad7fc0cc300b5ae5c3827c1e3ce03021-1800x1013" alt="" decoding="async">
 					<span class="door__for" data-i18n="door.animacao.for">Para produtoras de animação</span>
 					<span class="door__name" data-i18n="nav.animacao">Animação</span>
 					<span class="door__count" data-door-count="animacao"></span>
 				</a>
 				<a class="door is-variant-livros" href="?para=livros#livros" data-door="livros" data-cursor="enter">
-					<img class="door__img" src="../assets/img/tito-2.jpg" alt="" decoding="async">
+					<img class="door__img" src="../assets/img/tito-2.jpg" data-key="ba7c49a0d8f9d94e2f0741f84886b748025ae269-1454x1000" alt="" decoding="async">
 					<span class="door__for" data-i18n="door.livros.for">Para editoras</span>
 					<span class="door__name" data-i18n="nav.livros">Livros infantis</span>
 					<span class="door__count" data-door-count="livros"></span>
@@ -93,7 +97,7 @@
 					<h2 id="games-title" class="chapter__title" data-reveal data-i18n="nav.games">Games</h2>
 					<p class="chapter__lead" data-reveal data-i18n="games.lead"></p>
 				</header>
-				<div class="feature" data-feature="bear"></div>
+				<div class="feature" data-feature="games"></div>
 				<div class="shelf" data-list="games"></div>
 			</section>
 
@@ -102,7 +106,7 @@
 					<h2 id="anim-title" class="chapter__title" data-reveal data-i18n="nav.animacao">Animação</h2>
 					<p class="chapter__lead" data-reveal data-i18n="animacao.lead"></p>
 				</header>
-				<div class="feature" data-feature="robot"></div>
+				<div class="feature" data-feature="animacao"></div>
 				<div class="shelf" data-list="animacao"></div>
 				<div class="tv">
 					<header class="tv__head" data-reveal>
@@ -119,7 +123,7 @@
 					<h2 id="books-title" class="chapter__title" data-reveal data-i18n="nav.livros">Livros infantis</h2>
 					<p class="chapter__lead" data-reveal data-i18n="livros.lead"></p>
 				</header>
-				<div class="feature" data-feature="tito"></div>
+				<div class="feature" data-feature="livros"></div>
 				<div class="shelf" data-list="livros"></div>
 			</section>
 		</div>
@@ -265,11 +269,8 @@
 		<filter id="dh-noise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="1" stitchTiles="stitch" data-noise-seed/><feColorMatrix type="saturate" values="0"/></filter>
 	</svg>
 
-	<script src="../assets/works.js?v=6"></script>
-	<script src="../assets/common.js?v=6"></script>
-	<script src="motion.js?v=6"></script>
-	<script src="portrait.js?v=6"></script>
-	<script src="main.js?v=6"></script>
-	<script src="menu.js?v=8"></script>
+	<!-- Content from Sanity, then the runtime in this order; works.js only if Sanity does not answer. -->
+	<script src="../assets/cms.js?v=2" data-fallback="../assets/works.js?v=6"
+		data-then="../assets/common.js?v=8 motion.js?v=6 portrait.js?v=6 main.js?v=8 menu.js?v=10"></script>
 </body>
 </html>

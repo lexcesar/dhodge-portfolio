@@ -90,27 +90,39 @@ Projetos de referência:
 - `design/DIRECAO.md` está desatualizado: diz "só desktop" e "só pt-BR". O site já é PT/EN e tem mobile.
 - O `README.md` e o `works.js` têm bios diferentes. A certa é a do `works.js`: Ex Machina, eleito pelo público
   do Anima Mundi 2013 o melhor filme brasileiro de estudante, conferido em fontes.
-- Falta: e-mail de contato do Daniel, sketchbook do Instagram e retrato dele.
+- Falta só o e-mail do Daniel (o Alex vai passar; serve para o convite). O sketchbook é o Instagram que já está no
+  site, e os retratos já estão no Sobre (Alex, 25/11/2026).
 - O mobile não foi visto em iPhone ou Android de verdade, nem com VoiceOver.
 
-## Estado da publicação (primeira tarefa da sessão nova)
+## Estado em 25/11/2026 (2ª sessão): Sanity no ar
 
-O menu mobile novo ("teste de lápis", feito pelo Opus) está commitado localmente e **ainda não foi publicado**. O Alex
-já autorizou a publicação em 25/11/2026, mas a revisão adversarial foi interrompida antes do fim.
-
-1. Rodar o `revisor-critico` no diff `d171f6e..HEAD -- design/`, lendo `menu.js` inteiro. Pontos a atacar:
-   - corridas: toque duplo no gatilho, tocar numa seção ou trocar o idioma durante a animação, girar o aparelho para
-     ≥1024 px com o menu aberto, popstate/hash;
-   - os ~1,7 MB de quadros carregados em segundo plano: disparam no desktop? respeitam Save-Data?
-   - vazamentos de WAAPI, rAF ou listeners depois da troca de idioma;
-   - navegador sem View Transitions;
-   - a trava de rolagem;
-   - a convivência com o `dialog.viewer` e com o `motion.js`;
-   - a faixa de 1024–1279 px;
-   - as regras de 600–1023 px que foram removidas.
-2. Corrigir o que for grave e publicar pelo mockups, como descrito em "Onde as coisas estão".
-3. Material da verificação do Opus, em
-   `/private/tmp/claude-501/-Users-alexander-Projetos-axia-clients-dhodge/ff6a939c-e55b-47a5-8a67-468ffd29b0ff/scratchpad/menu/`:
-   vídeos, quadros-chave e prints. Pode ter sido apagado na limpeza do tmp.
-   - O desktop foi conferido idêntico em 1280, 1440 e 1920, PT e EN.
-   - Zero rolagem horizontal, zero alvos menores que 44 px, contraste AA.
+- **Projeto Sanity** `arbdqygj` ("Daniel Hodge · Portfólio"), org Axia `oyGCgNRv9`, dataset `production` **público**.
+  - Studio em https://dhodge.sanity.studio (`studio/` neste repo; `pnpm dev` na porta 3333, `pnpm deploy`).
+  - Sem tokens de API. Os dois que o create_project gerou vazaram no histórico e foram revogados. O site lê sem token, e
+    scripts rodam com `sanity exec … --with-user-token` (login do CLI do Alex).
+  - CORS sem credenciais: `https://dhodge.thisisaxia.com`, `http://127.0.0.1:4330`, `http://localhost:4330`. Com
+    credenciais: `http://localhost:3333` (Studio local). **Outro host (domínio do Daniel, preview) precisa entrar no CORS**,
+    senão o site cai calado no `works.js`.
+- **Modelo:**
+  - `work`: campos `{pt, en}`, seção, etapas e lista arrastável por seção (orderable-document-list).
+  - `section` (`section-games` etc.): lead, destaque e miniaturas.
+  - `profile`: bio, fotos, trajetória, prêmio, TV e perfis.
+  - Ids sem ponto, porque id com ponto é privado mesmo em dataset público.
+- **Importação** feita uma vez (`studio/scripts/import.ts`, md5 do snapshot `f5804d43…`): 49 docs, 75 imagens. Usa
+  createIfNotExists, então rodar de novo não apaga edição do Daniel. 14 jpgs de `design/assets/img` não eram usados pelo
+  site e não subiram.
+- **Site:**
+  - `design/assets/cms.js` busca no apicdn e monta `WORKS`/`PROFILE`/`SECTIONS`/`DH_IMG`. Depois injeta os scripts de
+    `data-then`. Se falhar ou passar de 3 s, carrega `works.js`.
+  - Uma edição publicada chega ao apicdn em ~0,3 s, mas o navegador guarda a resposta por até 60 s
+    (`max-age=60`): avisar o Daniel.
+  - Texto do CMS é escapado (`I18N.esc`), links só https, e há CSP `script-src 'self'`.
+  - O `works.js` é só reserva: **não editar mais**, porque a fonte de verdade é o Sanity.
+- **Revisões:**
+  - menu (4 achados) e integração (2 bloqueios + 7) corrigidos e verificados em Chromium e WebKit;
+  - scripts de teste no scratchpad da sessão 0db4c706 (`check.cjs`, `menu-fix.cjs`, `hash.cjs`, `t1-t5.cjs`).
+- **Falta:**
+  - convidar o Daniel como editor (o Alex passa o e-mail) e escrever um guia curto do Studio para ele;
+  - e-mail de contato no site: o campo saiu do schema até existir no layout;
+  - fotos com GPS: o CDN serve o original a quem tiver a URL, então tirar EXIF antes de subir;
+  - teste em iPhone/Android de verdade e com VoiceOver.
