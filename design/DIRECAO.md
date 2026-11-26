@@ -18,12 +18,12 @@ na minha logo. Eu botaria minha logo no topo da página também, posteriormente.
 
 ## 1. A frase
 A página inicial é a folha de rosto de um livro: o nome do autor, os papéis, o sumário de quatro capítulos e uma
-ilustração de frontispício. Apontar um capítulo faz o frontispício se desenhar com a arte daquele capítulo.
+ilustração de frontispício. A interface fica quieta, como a moldura de uma galeria: o desenho é a estrela.
 
 ## 2. Ponto forte tímido
 O processo continua sendo o forte (miniatura → linha → valores → cor), escondido no fim das galerias do Behance. Na v2
-ele era o botão "ver processo"; agora vira o próprio menu: cada capítulo do sumário passa, no palco, o teste de lápis do
-primeiro projeto dele, e dentro do projeto as etapas são os blocos que se leem rolando.
+ele era o botão "ver processo"; agora as etapas são os próprios blocos do projeto, que se leem rolando, na ordem em
+que o Daniel as publicou.
 
 ## 3. Oceano vermelho do segmento
 Grade de miniaturas estilo ArtStation em fundo preto, "Hi, I'm…" no topo, carrossel, mesma moldura em tudo.
@@ -54,14 +54,15 @@ uma tinta da própria arte, como as portas da v2:
 As quatro tintas são os quatro traços do botão de menu.
 
 ## 6. Referências
-Sem referência externa. Fica da v2, por ser o que o Alex aprovou: tipografia, paleta, rolagem inercial, revelações por
-recorte, cursor que se molda ao link, View Transitions, hover de borda laranja, o menu "teste de lápis" no celular, a
-foto com glitch do Sobre e o visualizador com morph.
+Sem referência externa. Fica da v2: tipografia, paleta, hover de borda laranja e a foto com glitch do Sobre. Saíram
+por pedido do Alex (26/11/2026: "sabe os efeitos de cursor? Pode remover. […] a estrela é o desenho dele"): o cursor próprio, a rolagem
+inercial, as revelações por recorte, o menu "teste de lápis" e os morphs, exceto o da capa.
 
 ## 7. A feature que o cliente não imaginou
-**O frontispício que se desenha.** No desktop, apontar um capítulo do sumário derruba a tinta dele sobre a ilustração e
-passa o teste de lápis do primeiro projeto (etapas em sequência, como um flipbook); ao clicar, o quadro final voa até a
-capa do projeto na página do capítulo. Sair do sumário devolve a ilustração do Daniel. No toque, o palco fica parado.
+**A capa que leva ao projeto.** A capa clicada atravessa a troca de página e vira a imagem grande do projeto (e volta ao
+cartão no botão voltar), em 320 ms. É o único objeto que se move entre páginas; ajuda a saber onde se está. O
+"frontispício que se desenha" (tinta e teste de lápis no hover do sumário) foi feito e retirado em 26/11/2026: chamava
+atenção para a interface, não para o desenho.
 
 ## 8. Estrutura
 Roteamento por parâmetro (`?category=`, `?project=`, `?page=about`): o host estático não reescreve caminho e o Editor
@@ -79,11 +80,13 @@ visual quebra `#hash`. Cada projeto tem endereço próprio e compartilhável; vo
 5. **Rodapé** em toda página: LinkedIn, Instagram, Behance, Bluesky, Cara (os vazios ficam ocultos), Sobre, crédito.
 
 ## 9. Movimento
-Passagens e estados. Cada passagem leva um objeto: a palavra do sumário vira o título do capítulo; o frontispício vira a
-capa; a capa vira a imagem do projeto (e volta, no botão voltar); o nome grande do início encolhe até a barra na troca de
-página (na rolagem do início, a barra só entra quando o sumário sai da tela). Revelação por recorte
-ao rolar, rolagem inercial no desktop, teste de lápis no menu do celular. Só transform, opacity e clip-path; nada prende a
-rolagem. `prefers-reduced-motion`: troca por esmaecimento curto, sem flipbook, sem rolagem inercial.
+Pouco, curto e a serviço do desenho (Alex, 26/11/2026). Cursor do sistema. Rolagem nativa. Nenhuma imagem se move
+enquanto é vista: sem zoom no hover, sem paralaxe, sem revelação ao rolar; a imagem só esmaece ao chegar. Estados
+(hover, foco, ativo, aberto/fechado) mudam por cor, fio laranja ou esmaecimento de 150 a 250 ms, nunca no seco. Troca de
+página: esmaecimento de 180 a 220 ms, e só a capa viaja até o projeto (320 ms). Menu do celular e visualizador abrem e
+fecham esmaecendo; a troca de imagem no visualizador é um esmaecimento de 200 ms. Na rolagem do início, a barra só entra
+quando o sumário sai da tela. O glitch das fotos fica só no Sobre. `prefers-reduced-motion`: sem
+esmaecimentos nem viagem da capa.
 
 ## 10. Restrições
 HTML/CSS/JS puro, sem build, servido de `design/site/` (local: porta 4330). Conteúdo do Sanity lido no navegador, com o
@@ -97,5 +100,5 @@ link frio, troca de idioma, teclado e foco, movimento reduzido, sem overflow hor
 
 ## 12. O que o Alex precisa olhar
 1. A distribuição dos projetos nos quatro capítulos (tabela no relatório).
-2. O frontispício que se desenha no hover (a ilustração do Daniel é o repouso; a prévia some ao sair do sumário).
+2. O movimento enxuto (26/11): se ainda sobra algo que chama mais atenção que o desenho.
 3. Animação dentro do Sobre como lugar provisório.

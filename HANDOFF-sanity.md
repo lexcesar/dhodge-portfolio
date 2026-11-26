@@ -149,7 +149,7 @@ Projetos de referência:
   - no rodapé, LinkedIn, Instagram, Behance, Bluesky e Cara;
   - na página inicial, uma ilustração que ele troca depois.
 - **Site v3 "Folha de rosto":**
-  - Fica em `design/site/` (index.html, app.js, stage.js, menu.js, motion.js, portrait.js, style.css), com
+  - Fica em `design/site/` (index.html, app.js, menu.js, motion.js, portrait.js, style.css), com
     `design/assets/{cms,common,i18n}.js` reescritos. Local: http://127.0.0.1:4330/site/.
   - Rotas por parâmetro: `?category=`, `?project=`, `?page=about` e `?lang=`. Links antigos (`?para=`, `#sobre` etc.)
     são convertidos.
@@ -175,12 +175,16 @@ Projetos de referência:
   - `presentation.ts` abre `/site/` no Studio local e `/` no hospedado.
   - **O deploy do Studio tem que andar junto com a publicação da v3**: antes disso, o Studio hospedado abriria a v2
     na raiz, que não entende `?project=`.
-  - `preview.js` foi regerado (v=5).
+  - `preview.js` foi regerado (carregado como v=6).
   - As duas armadilhas continuam tratadas: a perspectiva fica guardada na sessão, com rascunhos por padrão, e há um
     `$load` novo a cada carga.
   - O roteador avisa o Studio por `dh:navigate`, e o Studio navega por `dh:route`.
-  - Cada edição redesenha no lugar (`DH_RERENDER`) sem replay da entrada.
+  - Cada edição redesenha no lugar (`DH_RERENDER`), sem recarregar a página.
   - O ao vivo de verdade só dá para testar depois da migração, porque sem `project` no dataset a prévia fica no
     snapshot.
+- **Movimento enxuto (pedido do Alex, 26/11/2026):** sem cursor próprio, rolagem inercial, revelações, palco do
+  sumário, flipbook nem morphs (só a capa viaja até o projeto). Estados com transição de 150 a 250 ms. Ver `DIRECAO.md` §9.
+- **Prévia publicada pelo coordenador** em https://dhodge-portfolio.thisisaxia.com, a partir do `design/site` com os
+  caminhos `../assets/` trocados. Essa origem não está no CORS do Sanity: lá o site usa o snapshot (decisão do Alex).
 - **QA:** scripts em `qa/` no scratchpad da sessão d9121b74: `smoke.cjs`, `flow.cjs`, `widths.cjs`, `live.cjs`,
-  `reduced.cjs` e `vt.cjs`.
+  `reduced.cjs`, `quiet.cjs` e `kbd.cjs`.
