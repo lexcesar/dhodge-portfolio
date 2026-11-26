@@ -186,5 +186,18 @@ Projetos de referência:
   sumário, flipbook nem morphs (só a capa viaja até o projeto). Estados com transição de 150 a 250 ms. Ver `DIRECAO.md` §9.
 - **Prévia publicada pelo coordenador** em https://dhodge-portfolio.thisisaxia.com, a partir do `design/site` com os
   caminhos `../assets/` trocados. Essa origem não está no CORS do Sanity: lá o site usa o snapshot (decisão do Alex).
+- **Sanity parado (Alex, 26/11/2026: o Daniel ainda vai mudar mais coisas).** O site novo roda só com o snapshot
+  `design/assets/projects.js`. Pendente, para retomar depois, nesta ordem:
+  1. Ajustar `studio/scripts/migrate-projects.ts` ao que o Daniel mudar (projetos, categorias, textos, imagens) e
+     regerar o snapshot com `cd studio && pnpm migrate:dry`. Esse comando só lê o dataset.
+  2. Migração, que precisa do ok do Alex: `cd studio && pnpm migrate`. Cria `project` e `home` com
+     createIfNotExists e não apaga `work` nem `section`.
+  3. Edição ao vivo nas telas novas, ponta a ponta. Abrir o Presentation no Studio local (`pnpm dev`, que abre
+     `/site/`) e editar título, capa, bloco e home. Conferir o redesenho no lugar e a navegação Studio ↔ site
+     (`dh:navigate` e `dh:route`). Antes da migração não dá para testar, porque a prévia cai no snapshot.
+  4. Se o editor visual mudar: `cd studio && pnpm build:preview` e subir o `?v=` do `preview.js` no `cms.js`.
+  5. Deploy do Studio, só junto com a publicação da v3 na raiz e com o ok do Alex: `cd studio && pnpm deploy`.
+  6. CORS do host da prévia, decisão do Alex: `cd studio && npx sanity cors add https://dhodge-portfolio.thisisaxia.com --no-credentials`.
+     Sem isso, a prévia usa o snapshot e o console mostra um erro de CORS.
 - **QA:** scripts em `qa/` no scratchpad da sessão d9121b74: `smoke.cjs`, `flow.cjs`, `widths.cjs`, `live.cjs`,
   `reduced.cjs`, `quiet.cjs` e `kbd.cjs`.
