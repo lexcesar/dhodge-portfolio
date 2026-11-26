@@ -177,7 +177,9 @@ button { font: inherit; color: inherit; }
 .bar { position: fixed; inset: 0 0 auto; z-index: 20; height: var(--nav-height); view-transition-name: bar; }
 .bar::before {
 	content: ""; position: absolute; inset: 0; pointer-events: none;
-	background: color-mix(in oklab, var(--palette-stage-950) 78%, transparent);
+	/* view-transition-name makes the bar a backdrop root, so the blur sees nothing behind it in Chromium: the tint
+	   itself has to hide what scrolls under */
+	background: color-mix(in oklab, var(--palette-stage-950) 93%, transparent);
 	backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
 	box-shadow: 0 1px 0 var(--border); opacity: 0; transition: opacity var(--dur-slow) var(--ease-standard);
 }
@@ -543,7 +545,7 @@ main { display: block; padding-top: var(--nav-height); min-height: 70svh; }
 .timeline__where { font-weight: 700; }
 .timeline__what { color: var(--text-muted); font-size: var(--type-small); }
 
-/* ---------- award (Anima Mundi): a film still, a laurel, the facts ---------- */
+/* ---------- award (Anima Mundi): a film still and the facts ---------- */
 .award {
 	margin-top: var(--space-3xl); padding: var(--space-2xl) 0;
 	background: var(--surface-alt); border-block: 1px solid var(--border);
@@ -554,11 +556,6 @@ main { display: block; padding-top: var(--nav-height); min-height: 70svh; }
 }
 .award__media { grid-column: 1 / span 7; }
 .award__text { grid-column: 9 / span 4; display: grid; gap: var(--space-m); align-content: center; }
-.award__mark { position: relative; display: grid; place-items: center; width: 9rem; aspect-ratio: 1; margin-bottom: var(--space-s); color: var(--palette-ink-books); }
-.laurel { position: absolute; inset: 0; width: 100%; height: 100%; }
-.award__mark-text { display: grid; justify-items: center; line-height: 1; text-align: center; color: var(--text); }
-.award__festival { font-family: var(--font-display); font-size: 0.875rem; font-weight: 800; font-stretch: 70%; letter-spacing: var(--track-wide); text-transform: uppercase; }
-.award__year { margin-top: var(--space-2xs); font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; font-stretch: 80%; color: var(--palette-ink-books); }
 .award__kicker { color: var(--text-muted); font-size: var(--type-small); }
 .award__title {
 	font-family: var(--font-display); font-size: var(--type-h2); line-height: 0.9; font-weight: 800; font-stretch: 70%;
@@ -696,14 +693,11 @@ main { display: block; padding-top: var(--nav-height); min-height: 70svh; }
 	opacity: .5; filter: grayscale(.6); outline: 2px solid transparent; outline-offset: 2px;
 	transition: opacity var(--dur-base) var(--ease-standard), filter var(--dur-base) var(--ease-standard), outline-color var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-out-quint);
 }
-.viewer__step-label { display: inline-flex; align-items: center; gap: var(--space-xs); }
-.viewer__step .viewer__step-n { width: 1.25rem; height: 1.25rem; font-size: 0.75rem; background: transparent; color: inherit; border: 1px solid currentColor; transition: background-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard); }
 @media (hover: hover) { .viewer__step:hover { color: var(--text); } }
 @media (hover: hover) { .viewer__step:hover .viewer__thumb { opacity: .9; filter: none; transform: translateY(-2px); } }
 .viewer__step:active .viewer__thumb { transform: translateY(0) scale(.97); }
 .viewer__step[aria-current="step"] { color: var(--text); font-weight: 700; }
 .viewer__step[aria-current="step"] .viewer__thumb { opacity: 1; filter: none; outline-color: var(--link-hover-accent); }
-.viewer__step[aria-current="step"] .viewer__step-n { background: var(--link-hover-accent); border-color: var(--link-hover-accent); color: var(--palette-ink-950); }
 
 
 /* ---------- cursor ---------- */

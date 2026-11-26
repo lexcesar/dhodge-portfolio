@@ -14,6 +14,9 @@ import path from 'node:path';
 import { getCliClient } from 'sanity/cli';
 
 const DRY = process.argv.includes('--dry');
+/* A second real run would bring back a project Daniel deleted (createIfNotExists cannot tell "never created" from
+   "deleted"): once any project or the home exists, the real run stops unless asked with --again. */
+const AGAIN = process.argv.includes('--again');
 const DESIGN = path.resolve(process.cwd(), '..', 'design');
 const IMG = path.join(DESIGN, 'assets', 'img');
 const OUT = path.join(DESIGN, 'assets', 'projects.js');
@@ -237,6 +240,10 @@ window.DH_SNAPSHOT = ${JSON.stringify(snapshot)};
 `);
 	console.log(`snapshot: ${path.relative(process.cwd(), OUT)} (${projects.length} projects)`);
 	if (DRY) return;
+	if (existing.length && !AGAIN) {
+		console.log(`\nparado: ${existing.length} documento(s) project/home já existem no dataset. Rodar de novo recriaria o que o Daniel apagou. Para rodar mesmo assim: pnpm migrate -- --again`);
+		return;
+	}
 
 	/* Real run: upload what is missing, then create what does not exist yet. */
 	const ref = new Map<string, string>([...assets].map(([n, a]) => [n, a._id]));

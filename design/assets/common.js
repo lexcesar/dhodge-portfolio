@@ -18,7 +18,7 @@
 
 	/* Projects by slug and by category, in the order Daniel set in the Studio. Rebuilt in place on an edit. */
 	const CATS = ['character-design', 'illustrations', 'childrens-books', 'personal-art'];
-	const bySlug = {};
+	const bySlug = Object.create(null); /* ?project=constructor must not find Object's own properties */
 	const byCat = {};
 	const reindex = () => {
 		Object.keys(bySlug).forEach((k) => delete bySlug[k]);
@@ -56,7 +56,11 @@
 	/* View Transitions when available and motion is allowed. */
 	const transition = (fn) => {
 		if (reduced || !document.startViewTransition) { fn(); return Promise.resolve(); }
-		return document.startViewTransition(fn).finished.catch(() => {});
+		const vt = document.startViewTransition(fn);
+		/* a newer transition skips this one: every promise of it rejects, and none should reach the console */
+		vt.ready.catch(() => {});
+		vt.updateCallbackDone.catch(() => {});
+		return vt.finished.catch(() => {});
 	};
 
 	/* Images fade in once decoded. */

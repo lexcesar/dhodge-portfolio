@@ -70,7 +70,9 @@
 	const https = (url) => { try { const x = new URL(C(url)); return x.protocol === 'https:' ? x.href : ''; } catch { return ''; } };
 	/* Localized text that is really empty (stega leaves invisible characters in an empty-looking value) counts as none. */
 	const text = (v) => (v && (C(v.pt) || '').trim() + (C(v.en) || '').trim() ? v : null);
-	const attr = (id, type, path) => (P ? P.attr(id, type, path) : '');
+	/* click-to-edit only on documents that exist: never on the snapshot, whose ids are not in the dataset yet */
+	let live = false;
+	const attr = (id, type, path) => (P && live ? P.attr(id, type, path) : '');
 
 	const adapt = ({ projects, home, profile: p }) => {
 		if (!projects?.length || !home?.hero) throw new Error('cms: no projects in the dataset yet');
@@ -143,8 +145,13 @@
 		if (booted) return Promise.resolve();
 		console.info('cms: using projects.js', why?.message || why);
 		const ready = window.DH_SNAPSHOT ? Promise.resolve() : add(me.dataset.snapshot);
-		return ready.then(() => { adapt(window.DH_SNAPSHOT); window.DH_CMS = mode; boot(); })
-			.catch((e) => { console.error('cms: no content', e); document.documentElement.classList.add('is-offline'); });
+		return ready.then(() => { live = false; adapt(window.DH_SNAPSHOT); window.DH_CMS = mode; boot(); })
+			.catch((e) => {
+				console.error('cms: no content', e);
+				document.documentElement.classList.add('is-offline');
+				const box = document.querySelector('.loading');
+				if (box) box.textContent = window.I18N?.lang === 'en' ? 'The portfolio could not load. Please try again in a moment.' : 'O portfólio não carregou. Tente de novo daqui a pouco.';
+			});
 	};
 
 	/* The page gets its height only after the content arrives: app.js restores the scroll, not the browser. */
@@ -154,11 +161,11 @@
 		/* Visual editing: first result boots the page; every later one (an edit in the Studio) re-renders it. */
 		const css = document.createElement('link');
 		css.rel = 'stylesheet';
-		css.href = new URL('preview.css?v=5', me.src).href;
+		css.href = new URL('preview.css?v=6', me.src).href;
 		document.head.append(css);
 		let last = '';
 		const timer = setTimeout(() => snapshot(new Error('preview: no data'), 'fallback'), TIMEOUT * 2);
-		import(new URL('preview.js?v=5', me.src).href).then((mod) => {
+		import(new URL('preview.js?v=6', me.src).href).then((mod) => {
 			P = { clean: mod.clean, attr: mod.attrFor(studioUrl) };
 			mod.start({
 				query: QUERY,
@@ -168,6 +175,7 @@
 					const sig = JSON.stringify(data);
 					if (sig === last) return;
 					last = sig;
+					live = true;
 					try { adapt(data); } catch (e) {
 						/* no project yet: the snapshot stands in (nothing on it is clickable until the migration runs) */
 						clearTimeout(timer);
@@ -192,6 +200,7 @@
 	fetch(`${API}?query=${encodeURIComponent(QUERY)}`, { signal: ctrl.signal })
 		.then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
 		.then(({ result }) => {
+			live = true;
 			try { adapt(result); } catch (e) { return snapshot(e, 'snapshot'); }
 			window.DH_CMS = 'sanity';
 			boot();

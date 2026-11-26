@@ -431,6 +431,8 @@
 			navigating = false;
 			focusTitle();
 		};
+		vt.ready.catch(() => {});
+		vt.updateCallbackDone.catch(() => {});
 		vt.finished.then(done, done);
 	};
 

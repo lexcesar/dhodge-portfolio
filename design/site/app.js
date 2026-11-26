@@ -35,7 +35,7 @@
 		const old = q.get('para') || location.hash.slice(1);
 		if (!old) return;
 		if (old === 'main') { history.replaceState(history.state, '', location.pathname + location.search); return; }
-		const to = LEGACY[old] ? { category: LEGACY[old] } : ['animacao', 'anima-mundi', 'sobre', 'contato'].includes(old) ? { page: 'about' } : null;
+		const to = Object.hasOwn(LEGACY, old) ? { category: LEGACY[old] } : ['animacao', 'anima-mundi', 'sobre', 'contato'].includes(old) ? { page: 'about' } : null;
 		if (to || q.has('para')) history.replaceState(history.state, '', href(to || {}));
 	};
 
@@ -183,7 +183,7 @@
 			<p class="about__bio"${langAttr(PROFILE.bio)}><strong>${esc(PROFILE.name)}</strong>. ${esc(L(PROFILE.bio))}</p>
 		</header>
 		<div class="about__body">
-			<figure class="portrait" data-portrait data-reveal>
+			${PROFILE.photos?.length ? `<figure class="portrait" data-portrait data-reveal>
 				<button class="portrait__screen" type="button" data-cursor="photo" data-portrait-next aria-label="${t('portrait.next')}">
 					<span class="portrait__stack" data-portrait-stack></span>
 					<span class="portrait__glitch" aria-hidden="true">
@@ -198,7 +198,7 @@
 					<span class="portrait__count" data-portrait-count></span>
 					<button class="icon-button icon-button--small" type="button" data-portrait-toggle aria-pressed="false"></button>
 				</figcaption>
-			</figure>
+			</figure>` : ''}
 			<div class="about__side">
 				${a.work ? `<div class="about__block" data-reveal>
 					<h2 class="about__label">${t('about.awards')}</h2>
@@ -324,7 +324,29 @@
 		$('meta[name="description"]')?.setAttribute('content', description);
 	};
 	const clean = (s) => String(s).replace(/[​-‍⁠﻿]|[\u{E0000}-\u{E007F}]/gu, ''); /* stega characters out of the tab title */
+	/* The address decides the language too: going back to an entry written in the other language switches with it. */
+	const syncLang = () => {
+		const want = new URLSearchParams(location.search).get('lang');
+		if ((want === 'pt' || want === 'en') && want !== I18N.lang) I18N.set(want);
+	};
+	const metaFor = (r) => {
+		if (r.name === 'project') {
+			const p = bySlug[r.slug];
+			return [clean(p ? `${L(p.title)} · Daniel Hodge` : `${t('missing.title')} · Daniel Hodge`), clean(p ? `${L(p.title)}: ${catName(p.category)}, Daniel Hodge.` : t('meta.description'))];
+		}
+		if (r.name === 'category') return [`${catName(r.key)} · Daniel Hodge`, `${catName(r.key)}: ${t('projects', count(r.key))} · Daniel Hodge.`];
+		if (r.name === 'about') return [`${t('about.title')} · Daniel Hodge`, clean(L(PROFILE.bio)).slice(0, 160)];
+		return [t('meta.title'), t('meta.description')];
+	};
+	/* the alternate-language links point at this same page */
+	const alternates = () => $$('link[rel="alternate"][hreflang]').forEach((l) => {
+		const u = new URL(location.href);
+		u.hash = '';
+		u.searchParams.set('lang', l.hreflang.startsWith('pt') ? 'pt' : 'en');
+		l.href = u.href;
+	});
 	const render = () => {
+		syncLang();
 		I18N.apply();
 		route = parse();
 		projectNow = null;
@@ -333,17 +355,11 @@
 			const p = bySlug[route.slug];
 			projectNow = p || null;
 			html = p ? block('project', () => projectView(p)) : missingView();
-			meta(clean(p ? `${L(p.title)} · Daniel Hodge` : `${t('missing.title')} · Daniel Hodge`), clean(p ? `${L(p.title)}: ${catName(p.category)}, Daniel Hodge.` : t('meta.description')));
-		} else if (route.name === 'category') {
-			html = block('category', () => categoryView(route.key));
-			meta(`${catName(route.key)} · Daniel Hodge`, `${catName(route.key)}: ${t('projects', count(route.key))} · Daniel Hodge.`);
-		} else if (route.name === 'about') {
-			html = block('about', aboutView);
-			meta(`${t('about.title')} · Daniel Hodge`, clean(L(PROFILE.bio)).slice(0, 160));
-		} else {
-			html = block('home', homeView);
-			meta(t('meta.title'), t('meta.description'));
-		}
+		} else if (route.name === 'category') html = block('category', () => categoryView(route.key));
+		else if (route.name === 'about') html = block('about', aboutView);
+		else html = block('home', homeView);
+		meta(...metaFor(route));
+		alternates();
 		window.Stage?.stop();
 		view.innerHTML = html;
 		chrome(route);
@@ -358,17 +374,23 @@
 
 	/* ---------- the bar docks (wordmark and categories appear) once the home's own title page is out of view ---------- */
 	let dockIo = null;
+	/* decided at once from where the menu is (an observer answers a frame later, and the bar would blink) */
+	const syncDock = () => { const toc = $('[data-toc]', view); root.classList.toggle('is-docked', !toc || toc.getBoundingClientRect().bottom <= 0); };
 	const dock = () => {
 		dockIo?.disconnect();
 		const toc = $('[data-toc]', view);
 		if (!toc || !('IntersectionObserver' in window)) { root.classList.add('is-docked'); return; }
-		root.classList.remove('is-docked');
+		syncDock();
 		dockIo = new IntersectionObserver(([en]) => root.classList.toggle('is-docked', !en.isIntersecting && en.boundingClientRect.top < 0), { threshold: 0 });
 		dockIo.observe(toc);
 	};
 
 	/* ---------- moving between views ---------- */
-	const keep = () => history.replaceState({ ...(history.state || {}), y: Math.round(scrollY) }, '');
+	let keepTimer = 0;
+	const keep = () => { clearTimeout(keepTimer); history.replaceState({ ...(history.state || {}), y: Math.round(scrollY) }, ''); };
+	/* the scroll is written into the current entry once it settles, so a reload finds it (Chromium ignores a
+	   replaceState made during pagehide); a navigation cancels a pending write so it never lands on the next entry */
+	addEventListener('scroll', () => { clearTimeout(keepTimer); keepTimer = setTimeout(keep, 300); }, { passive: true });
 	const visible = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
 	/* The object a view change carries across: a cover (by project slug), the category word, the logo. */
 	const pairs = (from, to) => {
@@ -400,6 +422,7 @@
 			Motion.reset();
 			render();
 			window.scrollTo({ top: y, behavior: 'instant' });
+			syncDock();
 			list.forEach(([n, sel]) => name(pick(sel), n));
 			$$('[data-reveal]', view).forEach((el) => { if (visible(el)) el.classList.add('is-in'); });
 			/* The carried cover: the new picture starts as the old one (already decoded), so it never flies in blank;
@@ -430,6 +453,7 @@
 		keep();
 		if (replace) history.replaceState({ y: 0 }, '', next);
 		else history.pushState({ y: 0 }, '', next);
+		document.title = metaFor(parse())[0]; /* the Studio reads the title with the address */
 		dispatchEvent(new Event('dh:navigate')); /* the Studio's address bar follows (preview.js) */
 		return show(parse(), { from });
 	};
@@ -438,6 +462,7 @@
 	const enter = (url) => {
 		keep();
 		history.pushState({ y: 0 }, '', url);
+		document.title = metaFor(parse())[0];
 		dispatchEvent(new Event('dh:navigate'));
 		Motion.reset();
 		root.classList.add('is-routing');
@@ -456,9 +481,9 @@
 		e.preventDefault();
 		navigate(a.href);
 	});
-	addEventListener('popstate', (e) => show(parse(), { y: e.state?.y || 0 }));
+	addEventListener('popstate', (e) => { clearTimeout(keepTimer); show(parse(), { y: e.state?.y || 0 }); });
 	/* The Studio's address bar (Presentation) changed the URL: draw that view. */
-	addEventListener('dh:route', () => show(parse(), { focus: false }));
+	addEventListener('dh:route', () => { clearTimeout(keepTimer); show(parse(), { focus: false }); });
 	addEventListener('pagehide', keep);
 
 	/* Language switch: the whole page cross-fades, the scroll stays. */
@@ -478,6 +503,7 @@
 		root.classList.remove('is-first');
 		render();
 		window.scrollTo({ top: y, behavior: 'instant' });
+		syncDock();
 		Motion.revealAll();
 		window.Menu?.refresh();
 	};
