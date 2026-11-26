@@ -1,23 +1,26 @@
-/* Content from Sanity (project arbdqygj, dataset production), read in the browser from the public API CDN,
-   so an edit in the Studio shows up on the next page load, with no rebuild. The result keeps the shapes the
-   runtime already reads (window.WORKS, window.PROFILE) plus window.SECTIONS and window.DH_IMG. If the request
-   fails or takes too long, works.js (the snapshot the dataset was imported from) is loaded instead.
+/* Content from Sanity (project arbdqygj, dataset production), read in the browser from the public API CDN, so an
+   edit in the Studio shows up on the next page load, with no rebuild. The result becomes window.PROJECTS, window.HOME,
+   window.PROFILE and window.DH_IMG (image key -> CDN url). While the dataset has no "project" documents yet (before the
+   work -> project migration), or if the request fails or takes too long, the snapshot projects.js (written by the
+   migration's dry run, same shape as the query) is used instead.
    This script then loads the runtime scripts listed in data-then, in order. */
 (() => {
 	const me = document.currentScript;
 	const API = 'https://arbdqygj.apicdn.sanity.io/v2025-02-19/data/query/production';
 	const TIMEOUT = 3000;
+	const CATS = ['character-design', 'illustrations', 'childrens-books', 'personal-art'];
+	const NETWORKS = [['linkedin', 'LinkedIn'], ['instagram', 'Instagram'], ['behance', 'Behance'], ['bluesky', 'Bluesky'], ['cara', 'Cara']];
 
 	const img = '{ "url": url, "orig": originalFilename, "w": metadata.dimensions.width, "h": metadata.dimensions.height }';
 	const QUERY = `{
-		"works": *[_type == "work" && defined(image.asset->url) && defined(title.pt) && defined(section)] | order(orderRank) {
-			"id": _id, title, year, section, kind, fan, source,
-			"img": image.asset->${img},
-			"steps": steps[defined(image.asset->url)]{ label, "img": image.asset->${img} }
+		"projects": *[_type == "project" && defined(slug.current) && defined(category) && defined(title) && defined(cover.asset)] | order(orderRank) {
+			"id": _id, title, "slug": slug.current, category, year, fan, source, intro,
+			"cover": cover.asset->${img}, "coverAlt": cover.alt, "coverCaption": cover.caption,
+			"blocks": blocks[]{ _key, _type, caption, text, "alt": image.alt, "img": image.asset->${img} }
 		},
-		"sections": *[_type == "section"]{ key, lead, "featured": featured._ref, "related": related[]._ref },
+		"home": *[_id == "home"][0]{ roles, links, "logo": logo.asset->${img}, "hero": heroImage.asset->${img}, "heroAlt": heroImage.alt },
 		"profile": *[_id == "profile"][0]{
-			name, bio, tvAlso, timeline[]{ when, where, what }, links[]{ label, url },
+			name, bio, tvAlso, timeline[]{ when, where, what },
 			"photos": photos[defined(image.asset->url)]{ "img": image.asset->${img}, alt, caption },
 			"tv": tv[]{ title, year, length, video, "still": still.asset->${img}, what, credit },
 			award{ festival, year, work, workYear, prize, given, credits, about, video, source, "still": still.asset->${img},
@@ -45,17 +48,17 @@
 	let P = null; /* the preview module, when loaded */
 	const C = (v) => (P ? P.clean(v) : v); /* values used for logic, without stega */
 
-	/* Image key = the CDN file name without extension (what DH.src and imgName work with). */
+	/* Image key: the CDN file name without extension (Sanity), or the local file name (snapshot). */
 	let IMG = {}; /* a new map per result: the old one is the live window.DH_IMG, replaced in place by put() */
 	const key = (a) => {
-		const url = C(a?.url);
+		if (!a) return null;
+		if (a.name) return C(a.name);
+		const url = C(a.url);
 		if (!url) return null;
 		const k = url.split('/').pop().replace(/\.\w+$/, '');
 		IMG[k] = { url, orig: C(a.orig || '').replace(/\.\w+$/, '') };
 		return k;
 	};
-	/* Ids without the "work-" prefix the import gave them, so they match works.js (and the URLs stay short). */
-	const id = (v) => C(v || '').replace(/^work-/, '');
 	const video = (url) => {
 		const u = String(C(url) || '');
 		const yt = u.match(/(?:v=|youtu\.be\/)([\w-]{11})/);
@@ -65,41 +68,52 @@
 	};
 	/* Links from the Studio: https only (no javascript: or data: in an href). */
 	const https = (url) => { try { const x = new URL(C(url)); return x.protocol === 'https:' ? x.href : ''; } catch { return ''; } };
+	/* Localized text that is really empty (stega leaves invisible characters in an empty-looking value) counts as none. */
+	const text = (v) => (v && (C(v.pt) || '').trim() + (C(v.en) || '').trim() ? v : null);
+	const attr = (id, type, path) => (P ? P.attr(id, type, path) : '');
 
-	const adapt = ({ works, sections, profile: p }) => {
-		if (!works?.length || !p) throw new Error('cms: empty dataset');
+	const adapt = ({ projects, home, profile: p }) => {
+		if (!projects?.length || !home?.hero) throw new Error('cms: no projects in the dataset yet');
 		IMG = {};
-		if (!(p.photos || []).length) throw new Error('cms: profile without photos');
-		const WORKS = works.filter((w) => w.img?.url).map((w) => ({
-			id: id(w.id), title: w.title, year: w.year ?? '', section: C(w.section),
-			edit: P ? P.attr(C(w.id), 'work', 'image') : '', kind: w.kind || '', fan: w.fan || null, source: https(w.source),
-			img: key(w.img), w: w.img.w, h: w.img.h,
-			steps: (w.steps || []).filter((s) => s?.img?.url).map((s) => [s.label, key(s.img)]),
-		}));
-		const SECTIONS = Object.fromEntries((sections || []).map((s) => [C(s.key), { lead: s.lead, featured: s.featured ? id(s.featured) : null, related: (s.related || []).map(id) }]));
-		const a = p.award || {};
+		const PROJECTS = projects.filter((x) => x?.cover && CATS.includes(C(x.category)) && C(x.slug)).map((x) => {
+			const id = C(x.id);
+			return {
+				id, slug: C(x.slug), title: x.title, category: C(x.category), year: C(x.year) ?? '', fan: x.fan || '', source: https(x.source),
+				intro: text(x.intro),
+				cover: key(x.cover), w: x.cover.w, h: x.cover.h, coverAlt: text(x.coverAlt), coverCaption: text(x.coverCaption),
+				edit: attr(id, 'project', 'cover'),
+				blocks: (x.blocks || []).map((b) => {
+					const type = C(b?._type);
+					const k = C(b?._key);
+					if (type === 'imageBlock' && b.img) {
+						return { type: 'image', key: k, img: key(b.img), w: b.img.w, h: b.img.h, caption: text(b.caption), text: text(b.text), alt: text(b.alt),
+							edit: attr(id, 'project', `blocks[_key=="${k}"].image`) };
+					}
+					if (type === 'textBlock' && text(b.text)) return { type: 'text', key: k, text: b.text };
+					return null;
+				}).filter(Boolean),
+			};
+		});
+		const links = home.links || {};
+		const HOME = {
+			roles: text(home.roles),
+			logo: key(home.logo), logoW: home.logo?.w, logoH: home.logo?.h, logoEdit: attr('home', 'home', 'logo'),
+			hero: key(home.hero), heroW: home.hero.w, heroH: home.hero.h, heroAlt: text(home.heroAlt), heroEdit: attr('home', 'home', 'heroImage'),
+			links: NETWORKS.map(([k, label]) => [label, https(links[k])]).filter(([, url]) => url),
+		};
+		const a = p?.award || {};
 		const PROFILE = {
-			name: p.name, bio: p.bio, tvAlso: p.tvAlso || '',
-			timeline: (p.timeline || []).map((j) => [j.when, j.where, j.what]),
-			links: (p.links || []).map((l) => [l.label, https(l.url)]).filter(([label, url]) => label && url),
-			photos: (p.photos || []).map((ph) => ({ img: key(ph.img), alt: ph.alt, caption: ph.caption || '' })),
-			tv: (p.tv || []).filter((v) => video(v.video)).map((v) => ({ ...v, video: video(v.video), still: key(v.still) })),
+			name: C(p?.name) || 'Daniel Hodge', bio: p?.bio || '', tvAlso: p?.tvAlso || '',
+			timeline: (p?.timeline || []).map((j) => [j.when, j.where, j.what]),
+			photos: (p?.photos || []).filter((ph) => ph.img).map((ph) => ({ img: key(ph.img), alt: ph.alt, caption: ph.caption || '' })),
+			tv: (p?.tv || []).filter((v) => video(v.video)).map((v) => ({ ...v, video: video(v.video), still: key(v.still) })),
 			award: { ...a, source: https(a.source), video: video(a.video), still: key(a.still), making: (a.making || []).filter((m) => video(m.video)).map((m) => [video(m.video), m.label, key(m.still)]) },
 		};
 		/* In place: on a live update the runtime keeps the same objects it read at start. */
-		put('WORKS', WORKS);
-		put('SECTIONS', SECTIONS);
+		put('PROJECTS', PROJECTS);
+		put('HOME', HOME);
 		put('PROFILE', PROFILE);
 		put('DH_IMG', IMG);
-		/* Section leads are UI strings in i18n.js; the Studio owns them now. */
-		const extra = { pt: {}, en: {} };
-		['games', 'animacao', 'livros', 'sketchbook'].forEach((k) => {
-			const lead = SECTIONS[k]?.lead;
-			/* null = back to the text in i18n.js (a lead cleared in the Studio) */
-			extra.pt[`${k}.lead`] = lead?.pt || null;
-			extra.en[`${k}.lead`] = lead?.pt ? lead.en || lead.pt : null;
-		});
-		window.I18N.extend(extra);
 	};
 
 	const put = (name, value) => {
@@ -110,56 +124,66 @@
 		else window[name] = value;
 	};
 
-	const add = (src) => {
+	const add = (src) => new Promise((resolve, reject) => {
 		const s = document.createElement('script');
 		s.src = src;
 		s.async = false; /* injected scripts run in insertion order */
+		s.onload = resolve;
+		s.onerror = reject;
 		document.body.append(s);
-		return s;
+	});
+	let booted = false;
+	const boot = () => {
+		if (booted) return;
+		booted = true;
+		(me.dataset.then || '').split(/\s+/).filter(Boolean).forEach(add);
 	};
-	const boot = () => (me.dataset.then || '').split(/\s+/).filter(Boolean).forEach(add);
-	const fallback = (why) => {
-		console.warn('cms: using works.js', why);
-		window.DH_CMS = 'fallback';
-		add(me.dataset.fallback);
-		boot();
+	/* The snapshot: before the migration (no project in the dataset) or when Sanity does not answer. */
+	const snapshot = (why, mode) => {
+		if (booted) return Promise.resolve();
+		console.info('cms: using projects.js', why?.message || why);
+		const ready = window.DH_SNAPSHOT ? Promise.resolve() : add(me.dataset.snapshot);
+		return ready.then(() => { adapt(window.DH_SNAPSHOT); window.DH_CMS = mode; boot(); })
+			.catch((e) => { console.error('cms: no content', e); document.documentElement.classList.add('is-offline'); });
 	};
 
-	/* The page gets its height only after the content arrives: main.js restores the scroll, not the browser. */
+	/* The page gets its height only after the content arrives: app.js restores the scroll, not the browser. */
 	if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-	window.addEventListener('pagehide', () => {
-		try { sessionStorage.setItem(`dh-scroll:${location.pathname}${location.search}${location.hash}`, String(Math.round(window.scrollY))); } catch { /* private mode */ }
-	});
 
 	if (studioUrl) {
 		/* Visual editing: first result boots the page; every later one (an edit in the Studio) re-renders it. */
 		const css = document.createElement('link');
 		css.rel = 'stylesheet';
-		css.href = new URL('preview.css?v=3', me.src).href;
+		css.href = new URL('preview.css?v=5', me.src).href;
 		document.head.append(css);
-		let booted = false;
 		let last = '';
-		const timer = setTimeout(() => { if (!booted) { booted = true; fallback(new Error('preview: no data')); } }, TIMEOUT * 2);
-		import(new URL('preview.js?v=3', me.src).href).then((mod) => {
+		const timer = setTimeout(() => snapshot(new Error('preview: no data'), 'fallback'), TIMEOUT * 2);
+		import(new URL('preview.js?v=5', me.src).href).then((mod) => {
 			P = { clean: mod.clean, attr: mod.attrFor(studioUrl) };
 			mod.start({
 				query: QUERY,
 				studioUrl,
 				onData: (data) => {
 					/* the Studio re-sends unchanged results (heartbeats, other documents): redraw only on a real change */
-					if (window.DH_CMS === 'fallback') return;
 					const sig = JSON.stringify(data);
 					if (sig === last) return;
 					last = sig;
-					try { adapt(data); } catch (e) { console.warn('cms preview:', e); return; }
+					try { adapt(data); } catch (e) {
+						/* no project yet: the snapshot stands in (nothing on it is clickable until the migration runs) */
+						clearTimeout(timer);
+						if (!booted) snapshot(e, 'snapshot');
+						return;
+					}
+					const first = !booted;
 					window.DH_CMS = 'preview';
-					if (!booted) { booted = true; clearTimeout(timer); boot(); return; }
+					clearTimeout(timer);
+					if (first) { boot(); return; }
 					window.DH?.reindex();
 					window.DH_RERENDER?.();
 				},
 				onError: (e) => console.warn('cms preview:', e),
 			});
-		}).catch((e) => { if (!booted) { booted = true; clearTimeout(timer); fallback(e); } });
+		}).catch((e) => { clearTimeout(timer); snapshot(e, 'fallback'); });
 		return;
 	}
 
@@ -167,7 +191,11 @@
 	const timer = setTimeout(() => ctrl.abort(), TIMEOUT);
 	fetch(`${API}?query=${encodeURIComponent(QUERY)}`, { signal: ctrl.signal })
 		.then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-		.then(({ result }) => { adapt(result); window.DH_CMS = 'sanity'; boot(); })
-		.catch(fallback)
+		.then(({ result }) => {
+			try { adapt(result); } catch (e) { return snapshot(e, 'snapshot'); }
+			window.DH_CMS = 'sanity';
+			boot();
+		})
+		.catch((e) => snapshot(e, 'fallback'))
 		.finally(() => clearTimeout(timer));
 })();

@@ -1,69 +1,101 @@
-# Direção — Daniel Hodge, portfólio (v1, duas direções)
+# Direção: Daniel Hodge, portfólio (v3, "Folha de rosto")
 
-**Briefing base:** `README.md` (levantamento dos perfis) + conversa de voz Alex/Daniel no claude.ai · **Data:** 24/11/2026 ·
-**Nicho:** ilustrador e animador 2D · **Publicidade regulada:** não.
-**Escopo desta rodada:** 2 layouts, **só desktop** (1280–1920), pedido do Alex por cota. Nada perguntado ao Daniel nesta versão.
-Uma direção só é a regra da casa; aqui são duas por pedido explícito do Alex.
+**Briefing base:** pedido de voz do Daniel (abaixo, literal) e as decisões do Alex de 26/11/2026 · **Data:** 26/11/2026 ·
+**Nicho:** ilustrador 2D, character designer e autor de livro infantil · **Publicidade regulada:** não.
+**Escopo:** a estrutura nova inteira, PT/EN, do celular (320) ao Full HD (1920) e QuadHD. Substitui a v2 "Três portas",
+congelada na tag `tres-portas-2026-11-26` e no branch `arquivo/tres-portas`.
+
+**O pedido do Daniel (transcrição de voz, literal):** "Teria no topo da página inicial, teria dizendo que eu era só
+escrito, né? Ilustrador, illustrator, character designer e author, né? Autor. Sei lá, separados por ponto. E teria um
+menu embaixo com, seria character design, illustrations, children's book e personal art. Aí, quando eu clicasse em um,
+por exemplo, character design, ele mostraria como se fosse uma imagem para cada projeto. Por exemplo, teria um projeto
+que eu trabalhei que mostraria uma imagem principal. Aí, quando eu clicasse nessa imagem, ele mostraria outras imagens
+também em formato de scroll, né? Você vai descendo e vai vendo as imagens com texto. E isso aconteceria também em
+ilustração, children's book e personal art. E na parte de baixo estaria link do meu LinkedIn, Instagram, Behance,
+Blue Sky e o cara. Basicamente isso. Aí na tela inicial também, embaixo do menu, teria só uma imagem que eu faria
+depois, uma ilustração. Pode botar uma só como exemplo, mas eu poderia mudar depois. Depois também eu tenho que pensar
+na minha logo. Eu botaria minha logo no topo da página também, posteriormente."
 
 ## 1. A frase
-Portfólio de ilustrador mostra a arte pronta. Este mostra **como o Daniel pensa**: a mesma peça da miniatura à cor
-final (A), ou o portfólio que se monta para quem chega, estúdio, produtora ou editora (B).
+A página inicial é a folha de rosto de um livro: o nome do autor, os papéis, o sumário de quatro capítulos e uma
+ilustração de frontispício. Apontar um capítulo faz o frontispício se desenhar com a arte daquele capítulo.
 
 ## 2. Ponto forte tímido
-O processo. Está publicado, escondido no fim das galerias do Behance (miniaturas A/B/C, linha, valores, opções de cor
-do urso polar, do Fizzban, do robô gigante e do Hearthstone) e no sketchbook do Instagram. Em A ele vira a primeira tela;
-em B vira o botão "ver processo" em cada peça que o tem.
+O processo continua sendo o forte (miniatura → linha → valores → cor), escondido no fim das galerias do Behance. Na v2
+ele era o botão "ver processo"; agora vira o próprio menu: cada capítulo do sumário passa, no palco, o teste de lápis do
+primeiro projeto dele, e dentro do projeto as etapas são os blocos que se leem rolando.
 
 ## 3. Oceano vermelho do segmento
-Grade de miniaturas estilo ArtStation em fundo preto, "Hi, I'm…" no topo, carrossel de logos, mesma moldura em tudo.
-**Não teremos:** grade uniforme, fundo preto genérico em A, frase de efeito no lugar do H1, eyebrow numerado, mono em rótulo.
+Grade de miniaturas estilo ArtStation em fundo preto, "Hi, I'm…" no topo, carrossel, mesma moldura em tudo.
+**Não teremos:** frase de efeito ou bio no topo ("só escrito": nome, papéis, menu), grade uniforme que corta a arte
+(as capas ficam inteiras, em fileiras justificadas), eyebrow numerado, mono em rótulo, nav que rola para o lado
+(reprovado pelo Alex), palavra dentro do cursor.
 
 ## 4. Material que o cliente tem
-- 101 imagens baixadas (ArtStation 44, Behance 57) em `media/`, versões web em `design/assets/img/`. Boa resolução nas
-  peças de 2022–2025; as de 2015–2017 têm entre 800 e 1200 px.
-- **Falta:** foto do Daniel (o dono é grande: pedir retrato), e-mail de contato, vídeos de Animação (Globo, Telecine),
-  Lemon Sky/Streamline (NDA?), os cards de Disney/MTG/Marvel, sketchbook do Instagram (a ferramenta bloqueou a coleta).
-  Nenhuma imagem de banco ou de IA: só obra dele.
-- Fan art (Hearthstone, Zelda, Dr. Strange, Udyr, Turma da Mônica) entra com selo "fan art · <IP>".
+- As obras que já estão no Sanity (43 `work`, 75 imagens) e os jpgs de `design/assets/img/`; os projetos de origem no
+  Behance (8) e no ArtStation (23), em `media/manifest.json`. Os títulos e datas vêm daí. **Descrições:** só as que o
+  próprio Daniel escreveu nas fontes, copiadas ao pé da letra e no idioma em que estão (as introduções de Portais do Rio,
+  Character Design, Polar Bearfolk Ranger, Finally we found a giant robot!, Turma da Mônica e Dr. Strange; o texto de
+  Fizzban; as legendas de título de algumas imagens). Os outros campos de texto nascem vazios para o Daniel escrever.
+- **Falta, e quem fornece:** o logo (Daniel, "depois"), a ilustração da página inicial (Daniel, "eu faria depois"),
+  os endereços do Bluesky e do Cara (não achados com segurança), os textos de cada projeto.
+- **Imagem de exemplo na página inicial:** o frame final de "Finally, we found a giant robot!" (2025): obra autoral,
+  recente, horizontal (16:9) e a mais cinematográfica do acervo. Fan art fica fora da vitrine principal.
 
 ## 5. Marca
-Não existe marca nem logo. A marca é o traço dele; o nome entra como logotipo tipográfico.
-- **A:** papel neutro `#f4f3f0`, grafite `#1c1b1a`, o cinza das pranchas de processo dele `#8a8987` como superfície de
-  palco, acento **vermelho do lápis** `#c22f28` (o lápis vermelho do sketchbook). Escala de apoio do grafite 50…950.
-- **B:** palco escuro `#121113` e papel `#f2f0ec`; cada porta herda uma tinta da própria arte (dado, não papel):
-  Games violeta da neve do urso `#6c5ce0`, Animação azul-noite do Portais do Rio `#3f6ea8`, Livros amarelo do Tito `#f0be2a`.
+Sem logo ainda: o nome é o logotipo tipográfico (Anybody 800, 70 % de largura). O lugar do logo tem altura fixa, e a
+imagem do campo `logo`, quando existir, entra nele sem mexer no layout.
+Palco `#121113`, papel `#f2f0ec`, laranja de hover `#ff7a33` (borda, nunca preenchimento leitoso). Cada capítulo herda
+uma tinta da própria arte, como as portas da v2:
+- Character Design: azul-noite do Portais do Rio `#3f6ea8`.
+- Illustrations: violeta da neve do urso `#6c5ce0`.
+- Children's Books: amarelo do Tito `#f0be2a`.
+- Personal Art: o papel do sketchbook `#f2f0ec` (lápis sobre papel).
+As quatro tintas são os quatro traços do botão de menu.
 
 ## 6. Referências
-Sem referência externa. O material dele dita: as pranchas cinza de processo (A), as molduras de card ovais e o formato de
-carta do Hearthstone (B, no destaque de Cards).
+Sem referência externa. Fica da v2, por ser o que o Alex aprovou: tipografia, paleta, rolagem inercial, revelações por
+recorte, cursor que se molda ao link, View Transitions, hover de borda laranja, o menu "teste de lápis" no celular, a
+foto com glitch do Sobre e o visualizador com morph.
 
 ## 7. A feature que o cliente não imaginou
-- **A:** o "palco de processo": uma régua que passa de miniatura → linha → valores → cor na mesma peça; e o visualizador
-  de processo em toda peça que tem etapas.
-- **B:** a **seleção sob medida**: o visitante (ou o próprio Daniel) marca peças e copia um link que abre o portfólio só
-  com elas. O Daniel manda um link diferente para cada estúdio.
+**O frontispício que se desenha.** No desktop, apontar um capítulo do sumário derruba a tinta dele sobre a ilustração e
+passa o teste de lápis do primeiro projeto (etapas em sequência, como um flipbook); ao clicar, o quadro final voa até a
+capa do projeto na página do capítulo. Sair do sumário devolve a ilustração do Daniel. No toque, o palco fica parado.
 
-## 8. Estrutura (desktop)
-A: topo · primeira tela (H1 + bio + palco do urso) · Games (com Cards) · Animação · Livros infantis · Sketchbook · Sobre
-(linha do tempo) · Contato.
-B: topo · primeira tela (H1 + três portas) · seções reordenadas pela porta escolhida · Sketchbook · Sobre · Contato ·
-bandeja da seleção.
-Conteúdo: títulos e datas dos perfis; bio aprovada na ligação; currículo do LinkedIn. Sem texto inventado sobre as peças.
+## 8. Estrutura
+Roteamento por parâmetro (`?category=`, `?project=`, `?page=about`): o host estático não reescreve caminho e o Editor
+visual quebra `#hash`. Cada projeto tem endereço próprio e compartilhável; voltar, link direto e troca de idioma funcionam.
+1. **Início** (celular primeiro): logo · papéis separados por ponto médio (texto do Sanity) · sumário com os quatro
+   capítulos (lista no celular, uma linha de quatro no desktop) · uma ilustração grande · rodapé. Sobre e PT/EN ficam no
+   canto do topo. A barra fixa só aparece quando o sumário sai da tela.
+2. **Capítulo** (`?category=`): título grande e a contagem; o primeiro projeto em destaque; os outros em fileiras
+   justificadas, capa inteira, título, ano, selo de fan art; no fim, a porta do próximo capítulo.
+3. **Projeto** (`?project=`): voltar ao capítulo, título, ano, selo, link da fonte; a capa grande; texto de abertura
+   (opcional); a sequência vertical de blocos (imagem com legenda e texto opcionais, bloco de texto); a porta do próximo
+   projeto. Clique numa imagem abre o visualizador.
+4. **Sobre** (`?page=about`, discreto: no topo, junto do idioma, e no rodapé): bio, fotos com glitch, prêmio do Anima
+   Mundi, trabalhos para a TV, trajetória. Animação sai do menu e, por ora, mora aqui.
+5. **Rodapé** em toda página: LinkedIn, Instagram, Behance, Bluesky, Cara (os vazios ficam ocultos), Sobre, crédito.
 
 ## 9. Movimento
-Passagens e estados: transição em todo controle (200–300 ms), imagens com fade, portas que abrem (B), crossfade no palco (A).
-`prefers-reduced-motion` respeitado. Sem coreografia por scroll nesta rodada.
+Passagens e estados. Cada passagem leva um objeto: a palavra do sumário vira o título do capítulo; o frontispício vira a
+capa; a capa vira a imagem do projeto (e volta, no botão voltar); o nome grande do início encolhe até a barra na troca de
+página (na rolagem do início, a barra só entra quando o sumário sai da tela). Revelação por recorte
+ao rolar, rolagem inercial no desktop, teste de lápis no menu do celular. Só transform, opacity e clip-path; nada prende a
+rolagem. `prefers-reduced-motion`: troca por esmaecimento curto, sem flipbook, sem rolagem inercial.
 
 ## 10. Restrições
-Só desktop nesta rodada. Futuro: Sanity como publicador (o `assets/works.js` já tem a forma do schema). Fontes
-hospedadas conosco (Bricolage Grotesque e Anybody, OFL, via Fontsource 5.3.0). Conteúdo em pt-BR; inglês fica em aberto.
+HTML/CSS/JS puro, sem build, servido de `design/site/` (local: porta 4330). Conteúdo do Sanity lido no navegador, com o
+snapshot `assets/projects.js` de reserva enquanto não houver `project` no dataset. Editor visual obrigatório, ao vivo,
+sem refresh. Fontes locais. Nada de texto inventado sobre as obras.
 
 ## 11. Portões que rodam
-Prints em 1280, 1440 e 1920; teclado no palco, nas portas e no visualizador; contraste dos pares de papéis.
-**Pulado nesta rodada:** o moodboard com aprovação (`moodboard_gate.py`) e o celular. Os dois layouts fazem as vezes de
-style frame.
+QA de visitante em Playwright (Chromium e WebKit) de 320 a 2560: home, os quatro capítulos, projetos até o fim, voltar,
+link frio, troca de idioma, teclado e foco, movimento reduzido, sem overflow horizontal, zero erro de console;
+`sanity schema extract` e `sanity build` do Studio; dry-run da migração.
 
 ## 12. O que o Alex precisa olhar
-1. A ou B como base (ou A com a seleção sob medida de B).
-2. O vermelho do lápis em A e as tintas por porta em B.
-3. Português só, ou português e inglês (estúdios de fora são público).
+1. A distribuição dos projetos nos quatro capítulos (tabela no relatório).
+2. O frontispício que se desenha no hover (a ilustração do Daniel é o repouso; a prévia some ao sair do sumário).
+3. Animação dentro do Sobre como lugar provisório.
