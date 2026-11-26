@@ -4,8 +4,9 @@
      ?category=<key>      a category: its projects, one cover each
      ?project=<slug>      a project: the cover, then its images and texts, top to bottom
      ?page=about          about: bio, photos, award, TV work, career
-   History API: back, forward, reload and a link opened cold all land on the same view. A view change is a view
-   transition that carries one object across (the category word, a cover, the logo). */
+   History API: back, forward, reload and a link opened cold all land on the same view. A view change is a short
+   cross-fade; only a project's cover travels, to the same picture on the next page. The interface stays quiet:
+   the drawings are the show. */
 (() => {
 	const { HOME, PROFILE, I18N, DH, Motion } = window;
 	const { t, L, esc } = I18N;
@@ -15,7 +16,6 @@
 	const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 	const view = $('[data-view]');
 	const bar = $('[data-bar]');
-	const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
 	const block = (name, fn) => { try { return fn(); } catch (e) { console.error(`render: ${name}`, e); return ''; } };
 	const catName = (key) => t(`cat.${key}`);
 	const nextOf = (list, x) => list[(list.indexOf(x) + 1) % list.length];
@@ -56,16 +56,16 @@
 	const homeView = () => `
 		<section class="title-page" aria-labelledby="page-title">
 			<h1 id="page-title" class="title-page__head" tabindex="-1">
-				<span class="mark" data-vt="mark">${logo('mark')}</span>
+				<span class="mark">${logo('mark')}</span>
 				<span class="title-page__roles"><span class="sr-only">, </span>${roles().split(/\s*·\s*/).map((r) => `<span class="title-page__role">${esc(r)}</span>`).join(' · ')}</span>
 			</h1>
 		</section>
 		<nav class="toc" data-toc aria-label="${t('nav.label')}">
 			<ul class="toc__list">${CATS.map((key, i) => `
 				<li class="toc__entry is-cat-${key}" style="--i:${i}">
-					<a class="toc__item" href="${href({ category: key })}" data-route data-cat="${key}" data-cursor="dot">
+					<a class="toc__item" href="${href({ category: key })}" data-route data-cat="${key}">
 						<span class="toc__ink" aria-hidden="true"></span>
-						<span class="toc__name"><span data-vt="cat-${key}">${esc(catName(key))}</span></span>
+						<span class="toc__name">${esc(catName(key))}</span>
 						<span class="toc__count"><span aria-hidden="true">${count(key)}</span><span class="sr-only">, ${t('projects', count(key))}</span>${icon.arrow}</span>
 					</a>
 				</li>`).join('')}
@@ -74,9 +74,7 @@
 		<figure class="stage" data-stage>
 			<div class="stage__frame" style="--r:${(HOME.heroW / HOME.heroH).toFixed(4)}">
 				<img class="stage__hero" src="${src(HOME.hero, 1800)}" srcset="${srcset(HOME.hero)}" sizes="(max-width: 1919px) 94vw, 1800px"${editAttr({ edit: HOME.heroEdit })} alt="${esc(L(HOME.heroAlt))}" width="${HOME.heroW}" height="${HOME.heroH}" decoding="async" fetchpriority="high">
-				<div class="stage__plates" data-plates aria-hidden="true"></div>
 			</div>
-			<figcaption class="stage__caption" data-stage-caption aria-hidden="true"></figcaption>
 		</figure>`;
 
 	/* ---------- category ---------- */
@@ -88,8 +86,8 @@
 			const n = images(lead).length;
 			const name = esc(L(lead.title));
 			return `
-			<div class="lead" style="--r:${(lead.w / lead.h).toFixed(4)}" data-reveal>
-				<a class="lead__open" href="${href({ project: lead.slug })}" data-route data-cursor="enter" aria-label="${t('open', name)}">
+			<div class="lead" style="--r:${(lead.w / lead.h).toFixed(4)}">
+				<a class="lead__open" href="${href({ project: lead.slug })}" data-route aria-label="${t('open', name)}">
 					<img class="lead__img" src="${src(lead.cover, 1800)}" srcset="${srcset(lead.cover)}" sizes="(max-width: 1023px) 92vw, 62vw"${editAttr(lead)} data-cover="${esc(lead.slug)}" alt="" width="${lead.w}" height="${lead.h}" decoding="async">
 				</a>
 				<div class="lead__side">
@@ -103,14 +101,14 @@
 		})() : '';
 		return `
 		<header class="chapter is-cat-${key}">
-			<h1 id="page-title" class="chapter__title" tabindex="-1"><span class="chapter__ink" aria-hidden="true"></span><span data-vt="cat-${key}">${esc(catName(key))}</span></h1>
+			<h1 id="page-title" class="chapter__title" tabindex="-1"><span class="chapter__ink" aria-hidden="true"></span><span>${esc(catName(key))}</span></h1>
 			<p class="chapter__count">${t('projects', list.length)}</p>
 		</header>
 		<div class="chapter__body is-cat-${key}">
 			${leadHtml}
 			${rest.length ? '<div class="shelf" data-shelf></div>' : ''}
 		</div>
-		<a class="door is-cat-${next}" href="${href({ category: next })}" data-route data-cursor="enter">
+		<a class="door is-cat-${next}" href="${href({ category: next })}" data-route>
 			<span class="door__kicker">${t('next.up')}</span>
 			<span class="door__name"><span class="door__ink" aria-hidden="true"></span>${esc(catName(next))}</span>
 			<span class="door__count">${t('projects', count(next))}${icon.arrow}</span>
@@ -128,8 +126,8 @@
 		const cap = L(im.caption);
 		const text = L(im.text);
 		return `
-			<figure class="${cls} ${shape}" style="--r:${r.toFixed(4)}" data-reveal>
-				<button class="${cls}__zoom" type="button" data-zoom="${k}" data-cursor="zoom" aria-label="${t('zoom', esc(altOf(p, im, k)))}">
+			<figure class="${cls} ${shape}" style="--r:${r.toFixed(4)}">
+				<button class="${cls}__zoom" type="button" data-zoom="${k}" aria-label="${t('zoom', esc(altOf(p, im, k)))}">
 					<img class="${cls}__img" src="${src(im.img, 1800)}" srcset="${srcset(im.img)}" sizes="(max-width: 1023px) 94vw, 80vw"${editAttr(im)} data-img="${esc(im.img)}"${k === 0 ? ` data-cover="${esc(p.slug)}"` : ''} alt="${esc(altOf(p, im, k))}" width="${im.w}" height="${im.h}" ${k === 0 ? 'decoding="async" fetchpriority="high"' : 'loading="lazy" decoding="async"'}>
 				</button>
 				${cap || text ? `<figcaption class="${cls}__caption">${cap ? `<span class="${cls}__label"${langAttr(im.caption)}>${esc(cap)}</span>` : ''}${text ? `<span class="${cls}__text"${langAttr(im.text)}>${para(im.text)}</span>` : ''}</figcaption>` : ''}
@@ -141,7 +139,7 @@
 		let k = 0;
 		const blocks = p.blocks.map((b) => (b.type === 'image'
 			? figure(p, b, ++k, 'block')
-			: `<div class="block block--text prose" data-reveal${langAttr(b.text)}>${para(b.text)}</div>`)).join('');
+			: `<div class="block block--text prose"${langAttr(b.text)}>${para(b.text)}</div>`)).join('');
 		return `
 		<article class="project is-cat-${p.category}">
 			<header class="project__head">
@@ -154,11 +152,11 @@
 				</p>
 			</header>
 			${figure(p, images(p)[0], 0, 'cover')}
-			${L(p.intro) ? `<div class="project__intro prose" data-reveal${langAttr(p.intro)}>${para(p.intro)}</div>` : ''}
+			${L(p.intro) ? `<div class="project__intro prose"${langAttr(p.intro)}>${para(p.intro)}</div>` : ''}
 			${blocks ? `<div class="project__blocks">${blocks}</div>` : ''}
 			<nav class="project__end" aria-label="${t('next.project')}">
 				${next ? `
-				<a class="next" href="${href({ project: next.slug })}" data-route data-cursor="enter">
+				<a class="next" href="${href({ project: next.slug })}" data-route>
 					<span class="next__thumb"><img src="${src(next.cover, 800)}" data-cover="${esc(next.slug)}" alt="" width="${next.w}" height="${next.h}" loading="lazy" decoding="async"></span>
 					<span class="next__text"><span class="next__kicker">${t('next.project')}</span><span class="next__title">${esc(L(next.title))}</span></span>
 					${icon.arrow}
@@ -179,12 +177,12 @@
 		const a = PROFILE.award || {};
 		return `
 		<header class="chapter chapter--about">
-			<h1 id="page-title" class="chapter__title" tabindex="-1"><span data-vt="about">${t('about.title')}</span></h1>
+			<h1 id="page-title" class="chapter__title" tabindex="-1"><span>${t('about.title')}</span></h1>
 			<p class="about__bio"${langAttr(PROFILE.bio)}><strong>${esc(PROFILE.name)}</strong>. ${esc(L(PROFILE.bio))}</p>
 		</header>
 		<div class="about__body">
-			${PROFILE.photos?.length ? `<figure class="portrait" data-portrait data-reveal>
-				<button class="portrait__screen" type="button" data-cursor="photo" data-portrait-next aria-label="${t('portrait.next')}">
+			${PROFILE.photos?.length ? `<figure class="portrait" data-portrait>
+				<button class="portrait__screen" type="button" data-portrait-next aria-label="${t('portrait.next')}">
 					<span class="portrait__stack" data-portrait-stack></span>
 					<span class="portrait__glitch" aria-hidden="true">
 						<img class="portrait__chroma portrait__chroma--r" alt="" data-chroma="r">
@@ -200,11 +198,11 @@
 				</figcaption>
 			</figure>` : ''}
 			<div class="about__side">
-				${a.work ? `<div class="about__block" data-reveal>
+				${a.work ? `<div class="about__block">
 					<h2 class="about__label">${t('about.awards')}</h2>
 					<a class="about__award" href="#premio" data-scroll="premio"><span class="about__award-name">${esc(a.festival || 'Anima Mundi')} ${esc(a.year)}</span><span class="about__award-place">${esc(a.work)} · ${esc(L(a.prize))}</span></a>
 				</div>` : ''}
-				<div class="about__block" data-reveal>
+				<div class="about__block">
 					<h2 class="about__label">${t('about.path')}</h2>
 					<ol class="timeline">${(PROFILE.timeline || []).map(([when, where, what]) => `<li><span class="timeline__when">${esc(when)}</span><span class="timeline__where">${esc(where)}</span><span class="timeline__what">${esc(L(what))}</span></li>`).join('')}</ol>
 				</div>
@@ -212,8 +210,8 @@
 		</div>
 		${a.work ? `<section class="award" id="premio" tabindex="-1" aria-labelledby="award-title">
 			<div class="award__inner">
-				<div class="award__media" data-reveal data-award-media></div>
-				<div class="award__text" data-reveal>
+				<div class="award__media" data-award-media></div>
+				<div class="award__text">
 					<p class="award__kicker">${esc(a.festival || 'Anima Mundi')} ${esc(a.year)}${L(a.given) ? ` · ${esc(L(a.given))}` : ''}</p>
 					<h2 id="award-title" class="award__title">${esc(a.work)}</h2>
 					<p class="award__prize">${esc(L(a.prize))}</p>
@@ -225,12 +223,12 @@
 			</div>
 		</section>` : ''}
 		${(PROFILE.tv || []).length ? `<section class="tv" aria-labelledby="tv-title">
-			<header class="tv__head" data-reveal>
+			<header class="tv__head">
 				<h2 id="tv-title" class="tv__title">${t('reel.title')}</h2>
 				<p class="tv__lead">${t('tv.lead')}</p>
 			</header>
 			<ul class="tv__list" data-tv></ul>
-			${L(PROFILE.tvAlso) ? `<p class="tv__also" data-reveal>${esc(L(PROFILE.tvAlso))}</p>` : ''}
+			${L(PROFILE.tvAlso) ? `<p class="tv__also">${esc(L(PROFILE.tvAlso))}</p>` : ''}
 		</section>` : ''}`;
 	};
 
@@ -245,7 +243,7 @@
 		const box = document.createElement('div');
 		box.className = 'video';
 		box.innerHTML = `
-			<button class="video__facade" type="button" data-cursor="play" aria-label="${t('video.play', esc(name))}">
+			<button class="video__facade" type="button" aria-label="${t('video.play', esc(name))}">
 				${still ? `<img class="video__still" src="${src(still, 1200)}" alt="" loading="lazy" decoding="async">` : ''}
 				<span class="video__play" aria-hidden="true">${icon.play}</span>
 				${label || note ? `<span class="video__label">${esc(label)}${note ? `<span class="video__note">${esc(note)}</span>` : ''}</span>` : ''}
@@ -273,8 +271,6 @@
 		if (tv) tv.replaceChildren(...(PROFILE.tv || []).map((v, k) => {
 			const li = document.createElement('li');
 			li.className = `tv__item${k === 0 ? ' tv__item--lead' : ''}`;
-			li.dataset.reveal = '';
-			li.style.setProperty('--reveal-delay', `${k * 90}ms`);
 			const cap = document.createElement('div');
 			cap.className = 'tv__caption';
 			cap.innerHTML = `<span class="tv__name">${esc(v.title)}</span><span class="tv__what">${esc(L(v.what))}</span><span class="tv__meta">${esc(L(v.credit))} · ${esc(v.year)} · ${esc(v.length)}</span>`;
@@ -360,16 +356,13 @@
 		else html = block('home', homeView);
 		meta(...metaFor(route));
 		alternates();
-		window.Stage?.stop();
 		view.innerHTML = html;
 		chrome(route);
 		if (route.name === 'category') block('shelf', () => fillShelf(route.key));
 		if (route.name === 'about') block('about', wireAbout);
-		if (route.name === 'home') window.Stage?.init();
 		$$('img', view).forEach((img) => { if (!img.closest('.card')) fadeIn(img); });
 		$$('[data-zoom]', view).forEach((b) => b.addEventListener('click', () => openViewer(projectNow, +b.dataset.zoom, $('img', b))));
 		dock();
-		Motion.observe();
 	};
 
 	/* ---------- the bar docks (wordmark and categories appear) once the home's own title page is out of view ---------- */
@@ -392,15 +385,10 @@
 	   replaceState made during pagehide); a navigation cancels a pending write so it never lands on the next entry */
 	addEventListener('scroll', () => { clearTimeout(keepTimer); keepTimer = setTimeout(keep, 300); }, { passive: true });
 	const visible = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
-	/* The object a view change carries across: a cover (by project slug), the category word, the logo. */
+	/* The one object a view change carries: a project's cover, into the project and back to its card. */
 	const pairs = (from, to) => {
-		const list = [];
-		const slug = to.name === 'project' ? to.slug : from.name === 'project' ? from.slug : to.name === 'category' ? byCat[to.key]?.[0]?.slug : null;
-		if (slug) list.push(['hero', `[data-cover="${CSS.escape(slug)}"]`]);
-		const cat = to.name === 'category' ? to.key : from.name === 'category' && to.name === 'home' ? from.key : null;
-		if (cat) list.push(['cat-title', `[data-vt="cat-${cat}"]`]);
-		list.push(['mark', '[data-vt="mark"], [data-bar-mark]']);
-		return list;
+		const slug = to.name === 'project' ? to.slug : from.name === 'project' ? from.slug : null;
+		return slug ? [['hero', `[data-cover="${CSS.escape(slug)}"]`]] : [];
 	};
 	const pick = (sel) => $$(sel).find((el) => visible(el) && getComputedStyle(el).visibility !== 'hidden' && !el.closest('dialog'));
 	let navSeq = 0;
@@ -414,17 +402,14 @@
 		list.forEach(([n, sel]) => { before[n] = pick(sel); name(before[n], n); });
 		const restore = [];
 		root.classList.add('is-routing');
-		root.classList.remove('is-first');
 		const swap = async () => {
 			named.splice(0).forEach((el) => { el.style.viewTransitionName = ''; });
 			$('.viewer[open]')?.close();
 			window.Menu?.close({ instant: true, focus: false });
-			Motion.reset();
 			render();
 			window.scrollTo({ top: y, behavior: 'instant' });
 			syncDock();
 			list.forEach(([n, sel]) => name(pick(sel), n));
-			$$('[data-reveal]', view).forEach((el) => { if (visible(el)) el.classList.add('is-in'); });
 			/* The carried cover: the new picture starts as the old one (already decoded), so it never flies in blank;
 			   the right size for its new place loads once the trip is over. */
 			const a = before.hero;
@@ -448,7 +433,7 @@
 	};
 	const navigate = (url, { replace = false } = {}) => {
 		const next = new URL(url, location.href);
-		if (next.pathname + next.search === location.pathname + location.search) { Motion.scrollTo(document.body); return; }
+		if (next.pathname + next.search === location.pathname + location.search) { window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); return; }
 		const from = route;
 		keep();
 		if (replace) history.replaceState({ y: 0 }, '', next);
@@ -458,26 +443,10 @@
 		return show(parse(), { from });
 	};
 
-	/* Straight to a view, no transition of its own: the menu (menu.js) runs this inside its own view transition. */
-	const enter = (url) => {
-		keep();
-		history.pushState({ y: 0 }, '', url);
-		document.title = metaFor(parse())[0];
-		dispatchEvent(new Event('dh:navigate'));
-		Motion.reset();
-		root.classList.add('is-routing');
-		root.classList.remove('is-first');
-		render();
-		window.scrollTo({ top: 0, behavior: 'instant' });
-		$$('[data-reveal]', view).forEach((el) => { if (visible(el)) el.classList.add('is-in'); });
-		void document.body.offsetWidth; /* the revealed state is computed without its transition */
-		root.classList.remove('is-routing');
-	};
-
 	document.addEventListener('click', (e) => {
 		const a = e.target.closest('a[data-route]');
 		if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === '_blank') return;
-		if (a.closest('dialog[data-menu]')) return; /* the menu runs its own trip (menu.js) */
+		if (a.closest('dialog[data-menu]')) return; /* the menu closes itself first (menu.js) */
 		e.preventDefault();
 		navigate(a.href);
 	});
@@ -493,30 +462,24 @@
 		const seq = ++langSeq;
 		root.classList.add('is-switching-lang');
 		const y = scrollY;
-		DH.transition(() => { root.classList.remove('is-first'); I18N.set(b.dataset.lang); render(); window.scrollTo({ top: y, behavior: 'instant' }); Motion.revealAll(); })
+		DH.transition(() => { I18N.set(b.dataset.lang); render(); window.scrollTo({ top: y, behavior: 'instant' }); })
 			.then(() => { if (seq === langSeq) root.classList.remove('is-switching-lang'); });
 	}));
 
 	/* An edit in the Studio (visual editing): same view, new content, same scroll. */
 	window.DH_RERENDER = () => {
 		const y = scrollY;
-		root.classList.remove('is-first');
 		render();
 		window.scrollTo({ top: y, behavior: 'instant' });
 		syncDock();
-		Motion.revealAll();
 		window.Menu?.refresh();
 	};
 
-	window.App = { navigate, enter, render, show, parse, get route() { return route; } };
+	window.App = { navigate, render, show, parse, get route() { return route; } };
 
 	/* First paint. The content arrives after the browser's own scroll restore (cms.js waits for Sanity), so the
 	   scroll of a reload or a back/forward comes from history.state. */
 	legacy();
-	/* the first-paint entrance plays once; later views arrive by view transition, and a redraw (language, an edit in
-	   the Studio) must not play it again */
-	root.classList.add('is-first');
-	setTimeout(() => root.classList.remove('is-first'), 2200);
 	render();
 	const navType = performance.getEntriesByType?.('navigation')[0]?.type;
 	const y = history.state?.y;

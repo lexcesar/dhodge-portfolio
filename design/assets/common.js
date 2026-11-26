@@ -1,5 +1,5 @@
-/* Shared helpers: image URLs, icons, view transitions, the project card (hover flipbook) and the image viewer
-   (a project's images, one after the other, with a shared-element morph from the page). */
+/* Shared helpers: image URLs, icons, view transitions, the project card and the image viewer (a project's images,
+   one after the other; it fades in and out, and a frame change is a short cross-fade). */
 (() => {
 	const { t, L, esc } = window.I18N;
 	const BASE = document.documentElement.dataset.img || '../assets/img/';
@@ -81,49 +81,15 @@
 		return url.pathname + url.search;
 	};
 
-	/* Hover flipbook: a project with more than one image plays them like a pencil test. */
-	const flipbook = (box, p) => {
-		const list = images(p).slice(1, 6).map((x) => x.img);
-		if (reduced || !list.length) return () => {};
-		const flip = document.createElement('img');
-		flip.className = 'card__flip';
-		flip.alt = '';
-		flip.setAttribute('aria-hidden', 'true');
-		box.append(flip);
-		let timer = 0;
-		let k = 0;
-		const frames = [...list, p.cover];
-		const tick = () => {
-			if (!box.isConnected) { clearTimeout(timer); timer = 0; return; } /* re-rendered while hovered */
-			flip.src = src(frames[k], 800);
-			box.classList.add('is-flipping');
-			k += 1;
-			if (k < frames.length) timer = setTimeout(tick, 420);
-			else timer = setTimeout(() => box.classList.remove('is-flipping'), 420); /* lands on the cover again */
-		};
-		const stop = () => { clearTimeout(timer); timer = 0; box.classList.remove('is-flipping'); };
-		box.addEventListener('pointerenter', (e) => {
-			if (e.pointerType !== 'mouse') return;
-			frames.forEach((n) => preload(n, 800));
-			k = 0;
-			clearTimeout(timer);
-			timer = setTimeout(tick, 260);
-		});
-		box.addEventListener('pointerleave', stop);
-		return stop;
-	};
-
 	/* Project card on a category page: the cover, whole (no cropping), and a caption. */
 	const card = (p, k = 0) => {
 		const el = document.createElement('figure');
 		el.className = 'card';
-		el.dataset.reveal = '';
 		el.style.setProperty('--r', (p.w / p.h).toFixed(3));
-		el.style.setProperty('--reveal-delay', `${(k % 4) * 70}ms`);
 		const name = esc(L(p.title));
 		const n = images(p).length;
 		el.innerHTML = `
-			<a class="card__open" href="${href({ project: p.slug })}" data-route data-cursor="enter" aria-label="${t('open', name)}">
+			<a class="card__open" href="${href({ project: p.slug })}" data-route aria-label="${t('open', name)}">
 				<img class="card__img" src="${src(p.cover, 1200)}" srcset="${srcset(p.cover, 1800)}" sizes="(max-width: 599px) 92vw, (max-width: 1023px) 46vw, 32vw"${editAttr(p)} data-cover="${esc(p.slug)}" alt="" width="${p.w}" height="${p.h}" loading="lazy" decoding="async">
 			</a>
 			<figcaption class="card__caption">
@@ -133,7 +99,6 @@
 				${p.fan ? `<span class="badge">${t('fan.badge', esc(p.fan))}</span>` : ''}
 			</figcaption>`;
 		fadeIn(el.querySelector('img'));
-		flipbook(el.querySelector('.card__open'), p);
 		return el;
 	};
 
@@ -141,9 +106,7 @@
 	const dlg = document.querySelector('.viewer');
 	let current = null; /* the project */
 	let index = 0;
-	let origin = null;
 	let loadToken = 0;
-	let vtSeq = 0;
 	const v = dlg && {
 		title: dlg.querySelector('.viewer__title'),
 		count: dlg.querySelector('.viewer__count'),
@@ -183,11 +146,10 @@
 		v.steps.querySelector('[aria-current="step"]')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduced ? 'auto' : 'smooth' });
 	};
 
-	/* Frame change, animated on the image itself (a view transition would not capture the modal's top layer):
-	   a light-table wipe, the old image lingers a moment as onion skin. */
-	const EASE_OUT = 'cubic-bezier(.23, 1, .32, 1)';
-	const swap = (nextSrc, dir) => {
+	/* Frame change: a short cross-fade (the next image is already decoded); nothing slides or wipes. */
+	const swap = (nextSrc) => {
 		if (reduced) { v.img.src = nextSrc; return; }
+		v.canvas.querySelectorAll('.viewer__ghost').forEach((g) => g.remove());
 		const ghost = v.img.cloneNode();
 		ghost.className = 'viewer__img viewer__ghost';
 		ghost.removeAttribute('style');
@@ -195,12 +157,11 @@
 		ghost.setAttribute('aria-hidden', 'true');
 		v.canvas.append(ghost);
 		v.img.src = nextSrc;
-		v.img.animate([{ clipPath: dir > 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 700, easing: EASE_OUT });
-		const out = ghost.animate([{ opacity: 1, filter: 'none' }, { opacity: 0.45, filter: 'grayscale(1) contrast(.85)', offset: 0.4 }, { opacity: 0, filter: 'grayscale(1) contrast(.85)' }], { duration: 800, easing: 'ease', fill: 'forwards' });
+		const out = ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: 'ease-out', fill: 'forwards' });
 		out.finished.then(() => ghost.remove(), () => ghost.remove());
 	};
 
-	const go = (i, dir = i >= index ? 1 : -1) => {
+	const go = (i) => {
 		if (i === index) return;
 		const list = images(current);
 		const token = ++loadToken;
@@ -208,72 +169,42 @@
 		next.decode().catch(() => {}).then(() => {
 			if (token !== loadToken || !dlg.open) return;
 			index = i;
-			swap(next.src, dir);
+			swap(next.src);
 			mark();
 		});
 	};
 	const walk = (dir) => {
 		const n = images(current).length;
 		if (n < 2) return;
-		go((index + dir + n) % n, dir);
+		go((index + dir + n) % n);
 	};
 
-	/* Open project p at image i. from: the clicked image; it morphs into the viewer. */
+	/* Open project p at image i. The dialog fades in (CSS); the clicked picture, already decoded, shows at once and
+	   the full size replaces it when ready. from: the clicked image. */
 	const openViewer = (p, i = 0, from = null) => {
 		if (!dlg || !p) return;
 		current = p;
-		origin = from;
 		index = i;
 		fill();
 		mark();
 		const name = images(p)[i].img;
-		const morph = from && from.complete && from.naturalWidth > 0 && from.getBoundingClientRect().width > 0;
-		if (!morph) {
-			dlg.classList.remove('is-vt');
-			v.img.src = src(name);
-			fadeIn(v.img);
-			dlg.showModal();
-			return;
-		}
-		from.style.viewTransitionName = 'zoom';
-		dlg.classList.add('is-vt');
-		const seq = ++vtSeq;
-		transition(() => {
-			from.style.viewTransitionName = '';
-			dlg.showModal();
-			v.img.src = from.currentSrc || from.src; /* already decoded: no blank frame; the full size follows */
-			v.img.classList.remove('is-loading');
-			v.img.style.viewTransitionName = 'zoom';
-		}).then(() => {
-			if (seq !== vtSeq) return; /* closed mid-morph */
-			v.img.style.viewTransitionName = '';
-			dlg.classList.remove('is-vt');
+		const token = ++loadToken;
+		const ready = from && from.complete && from.naturalWidth > 0;
+		v.img.src = ready ? (from.currentSrc || from.src) : src(name);
+		if (!ready) fadeIn(v.img);
+		dlg.showModal();
+		if (ready) {
 			const full = preload(name);
-			full.decode().catch(() => {}).then(() => { if (seq === vtSeq && dlg.open && imgName(v.img) === name) v.img.src = full.src; });
-		});
+			full.decode().catch(() => {}).then(() => { if (token === loadToken && dlg.open && imgName(v.img) === name) v.img.src = full.src; });
+		}
 	};
 
-	/* Close: morph back to the image on the page when it is the same one and on screen. */
+	/* Close: the dialog fades out (CSS). */
 	const closeViewer = () => {
 		if (!dlg?.open) return;
 		++loadToken;
 		v.canvas.querySelectorAll('.viewer__ghost').forEach((g) => g.remove());
-		const name = imgName(v.img);
-		const target = document.querySelector(`main [data-img="${CSS.escape(name)}"]`);
-		const r = target?.getBoundingClientRect();
-		const visible = r && r.bottom > 0 && r.top < innerHeight && r.width > 0;
-		if (!visible || reduced) { dlg.classList.remove('is-vt'); dlg.close(); return; }
-		v.img.style.viewTransitionName = 'zoom';
-		dlg.classList.add('is-vt');
-		const seq = ++vtSeq;
-		transition(() => {
-			v.img.style.viewTransitionName = '';
-			dlg.close();
-			target.style.viewTransitionName = 'zoom';
-		}).then(() => {
-			target.style.viewTransitionName = '';
-			if (seq === vtSeq) dlg.classList.remove('is-vt');
-		});
+		dlg.close();
 	};
 
 	if (dlg) {
