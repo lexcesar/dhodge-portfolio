@@ -87,7 +87,7 @@ Projetos de referência:
 
 ## Pendências e divergências
 
-- `design/DIRECAO.md` está desatualizado: diz "só desktop" e "só pt-BR". O site já é PT/EN e tem mobile.
+- `design/DIRECAO.md` foi reescrito em 26/11/2026 para a v3 ("Folha de rosto"); a direção da v2 fica no histórico do git.
 - O `README.md` e o `works.js` têm bios diferentes. A certa é a do `works.js`: Ex Machina, eleito pelo público
   do Anima Mundi 2013 o melhor filme brasileiro de estudante, conferido em fontes.
 - Falta só o e-mail do Daniel (o Alex vai passar; serve para o convite). O sketchbook é o Instagram que já está no
@@ -139,3 +139,48 @@ Projetos de referência:
   - e-mail de contato no site: o campo saiu do schema até existir no layout;
   - fotos com GPS: o CDN serve o original a quem tiver a URL, então tirar EXIF antes de subir;
   - teste em iPhone/Android de verdade e com VoiceOver.
+
+## Estado em 26/11/2026: a estrutura pedida pelo Daniel (branch `redesign/estrutura-daniel`, sem merge)
+
+- **Pedido do Daniel, por voz:**
+  - no topo, o logo (por ora o nome) e "Ilustrador · Character designer · Autor";
+  - um menu com Character design, Ilustração, Livros infantis e Arte pessoal;
+  - cada categoria mostra uma capa por projeto, e o projeto abre numa rolagem de imagens com texto;
+  - no rodapé, LinkedIn, Instagram, Behance, Bluesky e Cara;
+  - na página inicial, uma ilustração que ele troca depois.
+- **Site v3 "Folha de rosto":**
+  - Fica em `design/site/` (index.html, app.js, stage.js, menu.js, motion.js, portrait.js, style.css), com
+    `design/assets/{cms,common,i18n}.js` reescritos. Local: http://127.0.0.1:4330/site/.
+  - Rotas por parâmetro: `?category=`, `?project=`, `?page=about` e `?lang=`. Links antigos (`?para=`, `#sobre` etc.)
+    são convertidos.
+  - Animação e Sobre saíram do menu. O Sobre fica no topo e no rodapé, e a Animação mora no Sobre.
+- **O site publicado (v2) não muda:**
+  - `design/b-tres-portas/` carrega cópias congeladas de `main` em `design/assets/v2/`.
+  - Os tipos `work` e `section` continuam no Studio, em "Site anterior (Três portas)". Nada foi apagado.
+- **Modelo novo:**
+  - `project`: título `{pt,en}`, slug, categoria, ano, fan art, capa com alt e legenda, introdução, blocos (imagem com
+    legenda e texto, ou só texto), link da fonte e ordem arrastável por categoria.
+  - `home` (singleton): papéis, logo, ilustração, links.
+  - Categorias fixas em `studio/schemaTypes/categories.ts`.
+- **Dados:**
+  - Enquanto o dataset não tiver `project`, o site usa o snapshot `design/assets/projects.js`, de 23 projetos. Ele
+    também cobre erro e timeout.
+  - O snapshot é gerado pela migração e tem o mesmo formato da consulta.
+- **Migração** (`studio/scripts/migrate-projects.ts`):
+  - `pnpm migrate:dry` só lê e escreve o snapshot.
+  - `pnpm migrate` (precisa do ok do Alex) sobe 6 imagens que faltam e cria 23 `project` e o `home` com
+    createIfNotExists. Rodar de novo não sobrescreve edição do Daniel.
+  - Textos só das fontes, ao pé da letra.
+- **Editor visual:**
+  - `presentation.ts` abre `/site/` no Studio local e `/` no hospedado.
+  - **O deploy do Studio tem que andar junto com a publicação da v3**: antes disso, o Studio hospedado abriria a v2
+    na raiz, que não entende `?project=`.
+  - `preview.js` foi regerado (v=5).
+  - As duas armadilhas continuam tratadas: a perspectiva fica guardada na sessão, com rascunhos por padrão, e há um
+    `$load` novo a cada carga.
+  - O roteador avisa o Studio por `dh:navigate`, e o Studio navega por `dh:route`.
+  - Cada edição redesenha no lugar (`DH_RERENDER`) sem replay da entrada.
+  - O ao vivo de verdade só dá para testar depois da migração, porque sem `project` no dataset a prévia fica no
+    snapshot.
+- **QA:** scripts em `qa/` no scratchpad da sessão d9121b74: `smoke.cjs`, `flow.cjs`, `widths.cjs`, `live.cjs`,
+  `reduced.cjs` e `vt.cjs`.
