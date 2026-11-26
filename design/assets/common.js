@@ -149,7 +149,6 @@
 	/* Frame change: a short cross-fade (the next image is already decoded); nothing slides or wipes. */
 	const swap = (nextSrc) => {
 		if (reduced) { v.img.src = nextSrc; return; }
-		v.canvas.querySelectorAll('.viewer__ghost').forEach((g) => g.remove());
 		const ghost = v.img.cloneNode();
 		ghost.className = 'viewer__img viewer__ghost';
 		ghost.removeAttribute('style');
@@ -183,6 +182,8 @@
 	   the full size replaces it when ready. from: the clicked image. */
 	const openViewer = (p, i = 0, from = null) => {
 		if (!dlg || !p) return;
+		closing?.cancel();
+		closing = null;
 		current = p;
 		index = i;
 		fill();
@@ -199,12 +200,17 @@
 		}
 	};
 
-	/* Close: the dialog fades out (CSS). */
+	/* Close: the dialog fades out first, then closes (Safari cannot keep a closing dialog on screen for a CSS
+	   transition). The fade holds at zero until the next open. */
+	let closing = null;
 	const closeViewer = () => {
-		if (!dlg?.open) return;
+		if (!dlg?.open || closing) return;
 		++loadToken;
-		v.canvas.querySelectorAll('.viewer__ghost').forEach((g) => g.remove());
-		dlg.close();
+		const end = () => { v.canvas.querySelectorAll('.viewer__ghost').forEach((g) => g.remove()); if (dlg.open) dlg.close(); };
+		if (reduced) { end(); return; }
+		const a = dlg.animate([{ opacity: getComputedStyle(dlg).opacity }, { opacity: 0 }], { duration: 200, easing: 'ease-out', fill: 'forwards' });
+		closing = a;
+		a.finished.then(() => { if (closing === a) end(); }, () => {});
 	};
 
 	if (dlg) {

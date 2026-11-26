@@ -71,7 +71,7 @@
 				</li>`).join('')}
 			</ul>
 		</nav>
-		<figure class="stage" data-stage>
+		<figure class="stage">
 			<div class="stage__frame" style="--r:${(HOME.heroW / HOME.heroH).toFixed(4)}">
 				<img class="stage__hero" src="${src(HOME.hero, 1800)}" srcset="${srcset(HOME.hero)}" sizes="(max-width: 1919px) 94vw, 1800px"${editAttr({ edit: HOME.heroEdit })} alt="${esc(L(HOME.heroAlt))}" width="${HOME.heroW}" height="${HOME.heroH}" decoding="async" fetchpriority="high">
 			</div>
@@ -385,9 +385,11 @@
 	   replaceState made during pagehide); a navigation cancels a pending write so it never lands on the next entry */
 	addEventListener('scroll', () => { clearTimeout(keepTimer); keepTimer = setTimeout(keep, 300); }, { passive: true });
 	const visible = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
-	/* The one object a view change carries: a project's cover, into the project and back to its card. */
+	/* The one object a view change carries: a project's cover, into the project and back to its own card (a cover
+	   with nowhere to land fades with the page: style.css, ::view-transition-old(hero):only-child). */
 	const pairs = (from, to) => {
-		const slug = to.name === 'project' ? to.slug : from.name === 'project' ? from.slug : null;
+		const back = from.name === 'project' && to.name === 'category' && DH.bySlug[from.slug]?.category === to.key;
+		const slug = to.name === 'project' ? to.slug : back ? from.slug : null;
 		return slug ? [['hero', `[data-cover="${CSS.escape(slug)}"]`]] : [];
 	};
 	const pick = (sel) => $$(sel).find((el) => visible(el) && getComputedStyle(el).visibility !== 'hidden' && !el.closest('dialog'));
