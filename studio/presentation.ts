@@ -1,18 +1,17 @@
 import { defineDocuments, defineLocations, presentationTool } from 'sanity/presentation';
 
-import { SECTIONS } from './schemaTypes/sections';
+import { CATEGORIES } from './schemaTypes/categories';
 
-/* The visual editor opens the live site. Locally: the static server of design/ (port 4330, allowed in the CORS list). */
+/* The visual editor opens the live site. Locally: the static server of design/ (port 4330, allowed in the CORS list).
+   Routes are query parameters (the host serves files as they are and Presentation percent-encodes a #hash):
+   ?category=<key>, ?project=<slug>, ?page=about. */
 const LOCAL = 'http://localhost:4330';
 const LIVE = 'https://dhodge.thisisaxia.com';
-const local = (dev: boolean) => (dev ? '/b-tres-portas/' : '/');
+const local = (dev: boolean) => (dev ? '/site/' : '/');
 
-/* ?para= puts a section first on the page (main.js); the Sketchbook is not a door, so it opens on the home page.
-   No #hash in these links: Presentation percent-encodes the fragment. */
-const DOORS = new Set(['games', 'animacao', 'livros']);
-const sectionLink = (base: string, key?: string) => {
-	const title = SECTIONS.find((s) => s.value === key)?.title ?? 'Início';
-	return { title, href: key && DOORS.has(key) ? `${base}?para=${key}` : base };
+const category = (base: string, key?: string) => {
+	const c = CATEGORIES.find((x) => x.value === key);
+	return c ? { title: c.title, href: `${base}?category=${c.value}` } : null;
 };
 
 export const presentation = (dev: boolean) => {
@@ -22,19 +21,26 @@ export const presentation = (dev: boolean) => {
 		previewUrl: { initial: `${dev ? LOCAL : LIVE}${base}` },
 		allowOrigins: [LIVE, LOCAL, 'http://127.0.0.1:4330'],
 		resolve: {
-			mainDocuments: defineDocuments([{ route: base, filter: '_id == "profile"' }]),
+			/* Presentation matches a route by its path only, and every page here shares one path: the document panel
+			   follows the home page; on a project or the About page, click the text or image to edit it. */
+			mainDocuments: defineDocuments([{ route: base, filter: '_id == "home"' }]),
 			locations: {
-				work: defineLocations({
-					select: { title: 'title.pt', section: 'section' },
-					resolve: (doc) => ({ locations: [sectionLink(base, doc?.section)] }),
+				project: defineLocations({
+					select: { title: 'title.pt', slug: 'slug.current', category: 'category' },
+					resolve: (doc) => ({
+						locations: [
+							...(doc?.slug ? [{ title: doc.title || 'Projeto', href: `${base}?project=${doc.slug}` }] : []),
+							...[category(base, doc?.category)].filter((x) => x !== null),
+						],
+					}),
 				}),
-				section: defineLocations({
-					select: { key: 'key' },
-					resolve: (doc) => ({ locations: [sectionLink(base, doc?.key)] }),
+				home: defineLocations({
+					select: { roles: 'roles.pt' },
+					resolve: () => ({ locations: [{ title: 'Página inicial', href: base }] }),
 				}),
 				profile: defineLocations({
 					select: { name: 'name' },
-					resolve: () => ({ locations: [{ title: 'Início', href: base }] }),
+					resolve: () => ({ locations: [{ title: 'Sobre', href: `${base}?page=about` }] }),
 				}),
 			},
 		},

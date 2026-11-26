@@ -24,3 +24,33 @@ export const localeText = defineType({
 		defineField({ ...en, type: 'text', rows: 3 }),
 	],
 });
+
+/* Text about a piece, in Portuguese, English or both: the site shows the visitor's language and falls back on the other
+   one. Daniel's own texts on Behance and ArtStation are mostly in English; they come in as written. */
+const either = (type: 'string' | 'text') => [
+	defineField({ name: 'pt', title: 'Português', type, ...(type === 'text' ? { rows: 3 } : {}) }),
+	defineField({ name: 'en', title: 'English', type, ...(type === 'text' ? { rows: 3 } : {}) }),
+];
+const one = (v: unknown) => {
+	const x = (v ?? {}) as { pt?: string; en?: string };
+	return x.pt?.trim() || x.en?.trim() ? true : 'Escreva em pelo menos um idioma, ou apague o campo.';
+};
+
+export const localeLine = defineType({
+	name: 'localeLine',
+	title: 'Texto curto (PT ou EN)',
+	type: 'object',
+	description: 'Em um idioma ou nos dois. Se faltar um, o site mostra o outro.',
+	options: { columns: 2 },
+	fields: either('string'),
+	validation: (r) => r.custom((v) => (v === undefined ? true : one(v))),
+});
+
+export const localeBody = defineType({
+	name: 'localeBody',
+	title: 'Texto (PT ou EN)',
+	type: 'object',
+	description: 'Em um idioma ou nos dois. Se faltar um, o site mostra o outro.',
+	fields: either('text'),
+	validation: (r) => r.custom((v) => (v === undefined ? true : one(v))),
+});

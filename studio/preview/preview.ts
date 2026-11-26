@@ -10,7 +10,10 @@ import { createDataAttribute, enableVisualEditing } from '@sanity/visual-editing
 type Start = { query: string; studioUrl: string; onData: (data: unknown) => void; onError: (e: unknown) => void };
 
 /* Fields the site uses for logic (ids, keys, links, video ids): never stega-encoded. */
-const SKIP = new Set(['id', 'key', 'section', 'featured', 'related', 'url', 'orig', 'video', 'source', 'year', 'workYear', 'w', 'h']);
+const SKIP = new Set([
+	'id', 'key', '_key', '_type', 'slug', 'category', 'section', 'featured', 'related', 'url', 'orig', 'video', 'source', 'year', 'workYear', 'w', 'h',
+	'linkedin', 'instagram', 'behance', 'bluesky', 'cara',
+]);
 
 /* Values the site uses for logic, without the invisible stega characters. */
 /* The Studio tells the perspective once, when it changes, and not again to a page that reconnects after a reload:
@@ -68,20 +71,24 @@ export function start({ query, studioUrl, onData, onError }: Start) {
 		else if (state.data) { debug.updates = Number(debug.updates) + 1; debug.perspective = state.perspective ?? debug.perspective; onData(state.data); }
 	});
 
+	/* The site routes with the History API (design/site/app.js): it fires "dh:navigate" after its own pushState, and
+	   draws the page again on "dh:route" (a navigation asked by the Studio's address bar) and on popstate. */
 	enableVisualEditing({
 		history: {
 			subscribe: (navigate) => {
 				const on = () => navigate({ type: 'push', url: location.href });
 				addEventListener('popstate', on);
-				addEventListener('hashchange', on);
-				return () => { removeEventListener('popstate', on); removeEventListener('hashchange', on); };
+				addEventListener('dh:navigate', on);
+				return () => { removeEventListener('popstate', on); removeEventListener('dh:navigate', on); };
 			},
 			update: (u) => {
-				/* Presentation percent-encodes the fragment: give the site its #section back */
-				const url = u.url.replace(/%23/g, '#');
+				if (u.type === 'pop') { history.back(); return; }
+				const url = new URL(u.url.replace(/%23/g, '#'), location.href);
+				if (url.origin !== location.origin) return;
+				if (url.href === location.href) return;
 				if (u.type === 'push') history.pushState(null, '', url);
-				if (u.type === 'replace') history.replaceState(null, '', url);
-				if (u.type === 'pop') history.back();
+				else history.replaceState(null, '', url);
+				dispatchEvent(new Event('dh:route'));
 			},
 		},
 		/* Edits arrive through live mode; only the Studio's refresh button reloads the page. */
