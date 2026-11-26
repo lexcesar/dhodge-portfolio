@@ -11,6 +11,8 @@
 		"schema:extract": "sanity schema extract --enforce-required-fields --force",
 		"import:dry": "sanity exec scripts/import.ts --with-user-token -- --dry",
 		"import": "sanity exec scripts/import.ts --with-user-token",
+		"migrate:dry": "sanity exec scripts/migrate-projects.ts -- --dry",
+		"migrate": "sanity exec scripts/migrate-projects.ts --with-user-token",
 		"build:preview": "esbuild preview/preview.ts --bundle --format=esm --minify --target=es2022 --legal-comments=none --outfile=../design/assets/preview.js && cp node_modules/@sanity/visual-editing-standalone/dist/styles.css ../design/assets/preview.css"
 	},
 	"dependencies": {
