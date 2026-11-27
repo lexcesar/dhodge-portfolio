@@ -1,0 +1,268 @@
+/* Daniel Hodge, from his sketches (27/11/2026): a white sheet (black in the dark), the drawing in the middle, the
+   interface in small type around it. Light or dark follows the system. Motion is short and quiet (Alex, 26/11):
+   colours, underlines and images fade; nothing slides, grows or follows the pointer. */
+
+/* ---------- fonts (local, the same files as the previous versions) ---------- */
+@font-face {
+	font-family: "Anybody";
+	src: url("../assets/fonts/anybody-latin-standard-normal.woff2") format("woff2");
+	font-weight: 100 900; font-stretch: 50% 150%; font-display: swap;
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: "Anybody";
+	src: url("../assets/fonts/anybody-latin-ext-standard-normal.woff2") format("woff2");
+	font-weight: 100 900; font-stretch: 50% 150%; font-display: swap;
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+	font-family: "Bricolage Grotesque";
+	src: url("../assets/fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2");
+	font-weight: 200 800; font-stretch: 75% 100%; font-display: swap;
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: "Bricolage Grotesque";
+	src: url("../assets/fonts/bricolage-grotesque-latin-ext-standard-normal.woff2") format("woff2");
+	font-weight: 200 800; font-stretch: 75% 100%; font-display: swap;
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------- tokens ---------- */
+:root {
+	color-scheme: light dark;
+	/* light: white sheet, dark ink (AA: ink 17.8:1, muted 6.3:1 on paper) */
+	--paper: #fcfcfb;
+	--ink: #151515;
+	--muted: #5e5e5a;
+	--rule: #d4d4cf;
+	--focus: #151515;
+
+	--font-ui: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+	--font-name: "Anybody", "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+
+	--type-small: 0.875rem;
+	--type-ui: 0.9375rem;
+	--type-body: 1.0625rem;
+	--type-menu: clamp(0.875rem, 0.56rem + 1.55vw, 1.3125rem);
+	--type-title: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+
+	--gutter: clamp(1rem, 0.4rem + 2.6vw, 2.75rem);
+	--col: min(100% - 2 * var(--gutter), 76rem);
+	--gap: clamp(1rem, 0.5rem + 1.6vw, 2rem);
+
+	--dur-fast: 150ms;
+	--dur-base: 220ms;
+	--dur-image: 360ms;
+	--ease: cubic-bezier(.2, 0, 0, 1);
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		/* dark: black sheet, light ink (AA: ink 16.1:1, muted 7.4:1 on paper) */
+		--paper: #101010;
+		--ink: #ecece8;
+		--muted: #a2a29c;
+		--rule: #34342f;
+		--focus: #ecece8;
+	}
+}
+
+/* ---------- base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+	margin: 0; min-height: 100svh;
+	display: grid; grid-template-rows: auto auto 1fr auto;
+	background: var(--paper); color: var(--ink);
+	font-family: var(--font-ui); font-size: var(--type-body); line-height: 1.55;
+	font-optical-sizing: auto; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+	transition: background-color var(--dur-base) var(--ease), color var(--dur-base) var(--ease);
+}
+img { display: block; max-width: 100%; height: auto; }
+img.is-loading { opacity: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+h1, p, figure { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:where(a, button, [tabindex]) {
+	outline: 2px solid transparent; outline-offset: 3px; border-radius: 2px;
+	transition: outline-color var(--dur-fast) var(--ease);
+}
+:where(a, button, [tabindex]):focus-visible { outline-color: var(--focus); }
+[tabindex="-1"]:focus { outline: none; }
+.sr-only {
+	position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+	overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.skip {
+	position: fixed; z-index: 10; top: 0.75rem; left: 0.75rem; padding: 0.625rem 0.875rem;
+	background: var(--ink); color: var(--paper); font-size: var(--type-ui); text-decoration: none;
+	opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease), outline-color var(--dur-fast) var(--ease);
+}
+.skip { outline-offset: -4px; }
+.skip:focus-visible { opacity: 1; pointer-events: auto; outline-color: var(--paper); }
+.noscript { padding: var(--gutter); color: var(--muted); }
+
+/* A text link: the underline fades in. */
+.text-link {
+	text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em;
+	text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+	transition: text-decoration-color var(--dur-base) var(--ease), outline-color var(--dur-fast) var(--ease);
+}
+@media (hover: hover) { .text-link:hover { text-decoration-color: currentColor; } }
+
+/* ---------- top: the name and the role on one line (sketch), the language in the corner ---------- */
+.top {
+	display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-s, 0.75rem) 1.5rem;
+	padding: clamp(1rem, 0.6rem + 1.6vw, 2rem) var(--gutter) 0;
+}
+.id {
+	display: flex; flex-wrap: wrap; align-items: baseline; column-gap: clamp(0.75rem, 0.4rem + 1.4vw, 1.5rem); row-gap: 0.125rem;
+	min-width: 0; min-height: 2.75rem; padding-block: 0.375rem; text-decoration: none;
+}
+.id__name {
+	font-family: var(--font-name); font-size: 1.0625rem; font-weight: 700; font-stretch: 100%;
+	letter-spacing: 0.06em; line-height: 1.2; text-transform: uppercase; white-space: nowrap;
+}
+.id__role {
+	color: var(--muted); font-size: var(--type-ui); line-height: 1.3;
+	transition: color var(--dur-base) var(--ease);
+}
+@media (hover: hover) { .id:hover .id__role { color: var(--ink); } }
+
+.lang { display: flex; align-items: center; flex: none; color: var(--muted); font-size: var(--type-small); }
+.lang__option {
+	min-width: 2.25rem; min-height: 2.75rem; padding: 0 0.375rem; border: 0; background: none; cursor: pointer;
+	color: var(--muted); font-size: var(--type-small); font-weight: 500; letter-spacing: 0.04em;
+	transition: color var(--dur-base) var(--ease), outline-color var(--dur-fast) var(--ease);
+}
+.lang__option[aria-pressed="true"] { color: var(--ink); }
+@media (hover: hover) { .lang__option:hover { color: var(--ink); } }
+.lang__option:active { color: var(--ink); }
+.lang__slash { opacity: 0.6; }
+
+/* ---------- the menu: three words over a long rule, centred (sketch) ---------- */
+.menu {
+	width: var(--col); margin: clamp(1.25rem, 0.5rem + 3.6vw, 4rem) auto 0;
+	border-bottom: 1px solid var(--rule);
+}
+.menu__list { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; }
+.menu__entry { display: flex; align-items: baseline; }
+.menu__entry + .menu__entry::before {
+	content: "•"; padding-inline: clamp(0.5rem, 0.2rem + 1.2vw, 1.125rem); color: var(--muted); font-size: var(--type-menu);
+}
+.menu__item {
+	display: inline-block; padding: 0.5rem 0.125rem 0.625rem; white-space: nowrap;
+	font-size: var(--type-menu); line-height: 1.4; letter-spacing: 0.005em; text-decoration: underline;
+	text-decoration-thickness: 1.5px; text-underline-offset: 0.32em; text-decoration-color: transparent;
+	transition: text-decoration-color var(--dur-base) var(--ease), color var(--dur-base) var(--ease), outline-color var(--dur-fast) var(--ease);
+}
+@media (hover: hover) { .menu__item:hover { text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); } }
+.menu__item:focus-visible { text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
+.menu__item:active { text-decoration-color: currentColor; }
+.menu__item[aria-current] { text-decoration-color: currentColor; }
+
+/* ---------- the view ---------- */
+.view { width: var(--col); margin-inline: auto; padding-block: var(--gap) clamp(2.5rem, 1.5rem + 4vw, 5rem); }
+.view:focus { outline: none; }
+
+/* home: one drawing in the middle, small, with a lot of air (sketch 1); the menu item in use shows its own */
+[data-view="home"] .view { display: grid; place-items: center; padding-block: clamp(1.5rem, 1rem + 3vw, 3.5rem); }
+.stage {
+	position: relative;
+	width: min(78vw, 22rem); height: min(46svh, 26rem);
+}
+@media (min-width: 768px) { .stage { width: min(36vw, 34rem); height: min(50svh, 30rem); } }
+.stage__img {
+	position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+	opacity: 0; transition: opacity var(--dur-image) var(--ease);
+}
+.stage__img.is-on { opacity: 1; }
+.stage__img.is-on.is-loading { opacity: 0; }
+
+/* category: a grid, one card per project (sketch 2); the title shows over the faded drawing */
+.grid { display: grid; grid-template-columns: 1fr; gap: var(--gap); }
+@media (min-width: 560px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.card__link { display: grid; gap: 0.625rem; text-decoration: none; outline-offset: 4px; }
+.card__media { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: color-mix(in srgb, var(--ink) 5%, var(--paper)); }
+.card__img {
+	width: 100%; height: 100%; object-fit: cover;
+	transition: opacity var(--dur-image) var(--ease);
+}
+.card__title {
+	font-size: var(--type-ui); line-height: 1.35; text-wrap: balance;
+	transition: opacity var(--dur-base) var(--ease), color var(--dur-base) var(--ease);
+}
+/* With a mouse: the title lives over the drawing, hidden until the pointer or the focus arrives. On touch it
+   stays under the drawing, always visible (nothing to hover). */
+@media (hover: hover) and (pointer: fine) {
+	.card__link { display: block; position: relative; }
+	.card__title {
+		position: absolute; inset: 0; display: grid; place-items: center; padding: 1.5rem;
+		font-size: clamp(1.125rem, 0.9rem + 0.6vw, 1.5rem); font-weight: 600; line-height: 1.2; text-align: center;
+		opacity: 0; pointer-events: none;
+	}
+	.card__link:hover .card__img:not(.is-loading), .card__link:focus-visible .card__img:not(.is-loading) { opacity: 0.12; }
+	.card__link:hover .card__title, .card__link:focus-visible .card__title { opacity: 1; }
+}
+.card__link:active .card__img:not(.is-loading) { opacity: 0.12; }
+
+/* project: the images large, one under the other (sketch 3), each one whole on the screen */
+.work__head { display: grid; justify-items: center; gap: 0.375rem; margin-bottom: clamp(1.5rem, 1rem + 2vw, 2.75rem); text-align: center; }
+.work__title { font-size: var(--type-title); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; text-wrap: balance; }
+.work__meta { color: var(--muted); font-size: var(--type-ui); }
+.work__flow { display: grid; justify-items: center; gap: clamp(2rem, 1.25rem + 3vw, 4.5rem); }
+.plate { display: grid; justify-items: center; gap: 0.75rem; width: 100%; }
+.plate__img { width: min(100%, calc(var(--r) * 86svh)); height: auto; aspect-ratio: var(--r); transition: opacity var(--dur-image) var(--ease); }
+.plate__caption { color: var(--muted); font-size: var(--type-small); text-align: center; }
+.prose { width: min(100%, 36rem); color: var(--ink); text-wrap: pretty; }
+.prose p + p { margin-top: 0.9em; }
+.work__intro { margin: 0 auto clamp(2rem, 1.25rem + 3vw, 4.5rem); }
+
+.work__next { display: flex; justify-content: center; margin-top: clamp(3rem, 2rem + 4vw, 6rem); padding-top: clamp(1.5rem, 1rem + 2vw, 2.5rem); border-top: 1px solid var(--rule); }
+.next { display: grid; justify-items: center; gap: 0.25rem; min-height: 2.75rem; padding: 0.25rem 0.5rem; text-align: center; text-decoration: none; }
+.next__label { color: var(--muted); font-size: var(--type-small); transition: color var(--dur-base) var(--ease); }
+.next__title {
+	font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); font-weight: 600; line-height: 1.25;
+	text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 0.3em; text-decoration-color: transparent;
+	transition: text-decoration-color var(--dur-base) var(--ease);
+}
+@media (hover: hover) { .next:hover .next__title { text-decoration-color: currentColor; } .next:hover .next__label { color: var(--ink); } }
+.next:focus-visible .next__title, .next:active .next__title { text-decoration-color: currentColor; }
+
+.missing { display: grid; justify-items: center; gap: 1rem; padding-block: clamp(3rem, 2rem + 6vw, 7rem); text-align: center; }
+.missing__title { font-size: var(--type-title); font-weight: 600; line-height: 1.2; }
+.missing p { color: var(--muted); max-width: 32rem; }
+
+/* ---------- foot: the links, as text, bottom left (sketch) ---------- */
+.foot { padding: 0 var(--gutter) clamp(1rem, 0.6rem + 1.6vw, 2rem); }
+.foot__links { display: flex; flex-wrap: wrap; align-items: center; }
+.foot__links[hidden] { display: none; }
+.foot__entry { display: flex; align-items: center; }
+.foot__entry + .foot__entry::before { content: "/"; padding-inline: 0.5rem; color: var(--muted); opacity: 0.7; }
+.foot__link {
+	display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--muted); font-size: var(--type-ui);
+	text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; text-decoration-color: transparent;
+	transition: color var(--dur-base) var(--ease), text-decoration-color var(--dur-base) var(--ease), outline-color var(--dur-fast) var(--ease);
+}
+@media (hover: hover) { .foot__link:hover { color: var(--ink); text-decoration-color: currentColor; } }
+.foot__link:active { color: var(--ink); }
+
+/* ---------- small screens: the role under the name ---------- */
+@media (max-width: 599px) {
+	.top { align-items: flex-start; }
+	.id { flex-direction: column; gap: 0; }
+	.id__role { font-size: var(--type-small); }
+}
+
+/* ---------- view change: a short cross-fade ---------- */
+.is-routing::view-transition-old(root) { animation: vt-out 160ms var(--ease) both; }
+.is-routing::view-transition-new(root) { animation: vt-in 220ms var(--ease) both; }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+	::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
