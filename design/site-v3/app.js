@@ -27,6 +27,9 @@
 			imageOf: (title, n) => `${title}, imagem ${n}`,
 			fan: (f) => `Fan art · ${f}`,
 			next: 'Próximo projeto',
+			prev: 'Projeto anterior',
+			up: (c) => `Voltar para ${c}`,
+			pager: 'Navegação entre projetos',
 			missingTitle: 'Este projeto não está aqui',
 			missingText: 'O endereço pode ter mudado. As categorias continuam no topo da página.',
 			missingHome: 'Ir para o início',
@@ -43,6 +46,9 @@
 			imageOf: (title, n) => `${title}, image ${n}`,
 			fan: (f) => `Fan art · ${f}`,
 			next: 'Next project',
+			prev: 'Previous project',
+			up: (c) => `Back to ${c}`,
+			pager: 'Project navigation',
 			missingTitle: 'This project is not here',
 			missingText: 'The address may have changed. The categories are still at the top of the page.',
 			missingHome: 'Go to the start',
@@ -75,14 +81,30 @@
 	const srcset = (im) => (im.cdn ? [...WIDTHS.filter((w) => w < im.w), Math.min(im.w, 2400)].map((w) => `${src(im, w)} ${w}w`).join(', ') : '');
 	const imgTag = (im, { cls = '', alt = '', sizes = '100vw', eager = false, extra = '' } = {}) => {
 		const set = srcset(im);
-		return `<img class="${cls} is-loading" src="${esc(src(im))}"${set ? ` srcset="${esc(set)}" sizes="${sizes}"` : ''} alt="${esc(alt)}" width="${im.w}" height="${im.h}" decoding="async"${eager ? ' fetchpriority="high"' : ' loading="lazy"'}${extra}>`;
+		return `<img class="${cls}${seen.has(im.url) ? '' : ' is-veiled'}" data-k="${esc(im.url)}" src="${esc(src(im))}"${set ? ` srcset="${esc(set)}" sizes="${sizes}"` : ''} alt="${esc(alt)}" width="${im.w}" height="${im.h}" decoding="async"${eager ? ' fetchpriority="high"' : ' loading="lazy"'}${extra}>`;
 	};
-	/* Every image arrives with a short fade, once it is decoded (never a blank box popping into a picture). */
-	const arrive = (scope) => $$('img.is-loading', scope).forEach((img) => {
-		const done = () => img.classList.remove('is-loading');
-		if (img.complete && img.naturalWidth) done();
-		else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', done, { once: true }); }
+	/* Every image appears with a slow, soft fade (Alex, 27/11: "imagens aparecendo com fade in bem suave"), when it
+	   enters the screen and only once it is decoded, so it never shows half drawn. Opacity only: it does not move,
+	   grow or wipe. Once seen it stays. Cards that arrive together follow each other by 70 ms (four at most). */
+	const decoded = (img) => (img.complete && img.naturalWidth ? Promise.resolve() : new Promise((r) => {
+		img.addEventListener('load', r, { once: true });
+		img.addEventListener('error', r, { once: true });
+	})).then(() => img.decode?.().catch(() => {}));
+	const seen = new Set(); /* images already shown: a redraw (language, back) never fades them again */
+	const unveil = (img, delay = 0) => decoded(img).then(() => {
+		if (img.dataset.k) seen.add(img.dataset.k);
+		if (delay) { img.style.transitionDelay = `${delay}ms`; setTimeout(() => { img.style.transitionDelay = ''; }, delay + 1200); }
+		img.classList.remove('is-veiled');
 	});
+	const io = 'IntersectionObserver' in window && new IntersectionObserver((entries) => {
+		let k = 0;
+		entries.forEach((e) => {
+			if (!e.isIntersecting) return;
+			io.unobserve(e.target);
+			unveil(e.target, e.target.closest('.grid') && !reduced() ? Math.min(k++, 3) * 70 : 0);
+		});
+	}, { rootMargin: '0px 0px -3% 0px', threshold: 0.01 });
+	const arrive = (scope) => $$('img.is-veiled:not([data-src])', scope).forEach((img) => (io && !reduced() ? io.observe(img) : unveil(img)));
 
 	/* ---------- content: the snapshot, remapped to the three categories of the sketch ---------- */
 	const CATS = V.categories.map((c) => c.key);
@@ -157,7 +179,7 @@
 			<div class="stage" data-stage>
 				${layers.map(([k, x]) => (k === 'default'
 					? imgTag(x.im, { cls: 'stage__img is-on', alt: L(x.alt), sizes: '(max-width: 767px) 80vw, 36vw', eager: true, extra: ` data-layer="${k}"` })
-					: `<img class="stage__img is-loading" data-layer="${k}" data-src="${esc(src(x.im, 1200))}" alt="" aria-hidden="true" width="${x.im.w}" height="${x.im.h}" decoding="async">`)).join('')}
+					: `<img class="stage__img is-veiled" data-layer="${k}" data-src="${esc(src(x.im, 1200))}" alt="" aria-hidden="true" width="${x.im.w}" height="${x.im.h}" decoding="async">`)).join('')}
 			</div>`;
 	};
 
@@ -188,8 +210,22 @@
 					${L(b.caption) ? `<figcaption class="plate__caption"${langAttr(b.caption)}>${esc(L(b.caption))}</figcaption>` : ''}
 				</figure>${b.text ? `<div class="prose"${langAttr(b.text)}>${para(b.text)}</div>` : ''}`;
 		}).join('');
+		/* The end of a project: previous (left), back to its category (centre), next (right), in the grid's order,
+		   round. One project: only the way back. Two: the other one only once, on the right. */
 		const list = byCat[p.category];
-		const next = list.length > 1 ? list[(list.indexOf(p) + 1) % list.length] : null;
+		const i = list.indexOf(p);
+		const next = list.length > 1 ? list[(i + 1) % list.length] : null;
+		const prev = list.length > 2 ? list[(i - 1 + list.length) % list.length] : null;
+		const cat = catName(p.category);
+		const step = (q, dir) => `<a class="pager__link pager__link--${dir}" href="${esc(href({ project: q.slug }))}" data-route>
+					<span class="pager__label">${dir === 'prev' ? `<span class="pager__arrow" aria-hidden="true">←</span> ${t('prev')}` : `${t('next')} <span class="pager__arrow" aria-hidden="true">→</span>`}</span>
+					<span class="pager__title"${langAttr(q.title)}>${esc(L(q.title))}</span>
+				</a>`;
+		const pager = `<nav class="pager" aria-label="${t('pager')}">
+				${prev ? step(prev, 'prev') : ''}
+				<a class="pager__link pager__link--up" href="${esc(href({ category: p.category }))}" data-route><span class="pager__title">${esc(t('up', cat[0].toUpperCase() + cat.slice(1)))}</span></a>
+				${next ? step(next, 'next') : ''}
+			</nav>`;
 		return `<article class="work">
 				<header class="work__head">
 					<h1 id="page-title" class="work__title" tabindex="-1"${langAttr(p.title)}>${esc(title)}</h1>
@@ -197,7 +233,7 @@
 				</header>
 				${p.intro ? `<div class="prose work__intro"${langAttr(p.intro)}>${para(p.intro)}</div>` : ''}
 				<div class="work__flow">${flow}</div>
-				${next ? `<nav class="work__next" aria-label="${t('next')}"><a class="next" href="${esc(href({ project: next.slug }))}" data-route><span class="next__label">${t('next')}</span><span class="next__title"${langAttr(next.title)}>${esc(L(next.title))}</span></a></nav>` : ''}
+				${pager}
 			</article>`;
 	};
 
@@ -217,6 +253,7 @@
 
 	const view = $('[data-view]');
 	const render = () => {
+		shown = location.pathname + location.search;
 		route = parse();
 		frame();
 		root.dataset.view = route.name;
@@ -235,12 +272,17 @@
 		const box = $('[data-stage]', view);
 		if (!box) { stageShow = null; return; }
 		const layers = $$('[data-layer]', box);
-		const load = () => layers.forEach((img) => { if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; arrive(box); } });
+		const load = () => layers.forEach((img) => { if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; unveil(img); } });
+		/* the drawing on screen stays until the next one is ready: never an empty stage */
+		let want = 'default';
+		const apply = (key) => layers.forEach((l) => l.classList.toggle('is-on', l.dataset.layer === key));
 		stageShow = (key) => {
 			clearTimeout(stageTimer);
-			if (key !== 'default') load();
-			const target = layers.some((l) => l.dataset.layer === key) ? key : 'default';
-			layers.forEach((l) => l.classList.toggle('is-on', l.dataset.layer === target));
+			const el = layers.find((l) => l.dataset.layer === key) || layers.find((l) => l.dataset.layer === 'default');
+			want = el.dataset.layer;
+			if (want !== 'default') load();
+			if (want === 'default' || !el.classList.contains('is-veiled')) { apply(want); return; }
+			decoded(el).then(() => { if (want === el.dataset.layer && el.isConnected) apply(want); });
 		};
 		/* the other drawings load once the page is quiet, so the first hover already has them */
 		const idle = () => { if (mqHover.matches) load(); };
@@ -271,10 +313,11 @@
 			return vt.finished.catch(() => {}).finally(() => root.classList.remove('is-routing'));
 		}
 		update();
-		view.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
+		view.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, easing: 'cubic-bezier(.22, 1, .36, 1)' });
 		return Promise.resolve();
 	};
 	const show = ({ y = 0, focus = true } = {}) => swap(() => {
+		window.Smooth?.stop();
 		render();
 		window.scrollTo({ top: y, behavior: 'instant' });
 	}).then(() => { if (focus) $('#page-title', view)?.focus({ preventScroll: true }); });
@@ -282,6 +325,7 @@
 	const navigate = (url) => {
 		const next = new URL(url, location.href);
 		if (next.pathname + next.search === location.pathname + location.search) {
+			window.Smooth?.stop();
 			window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
 			return;
 		}
@@ -296,7 +340,11 @@
 		e.preventDefault();
 		navigate(a.href);
 	});
-	addEventListener('popstate', () => show({ y: history.state?.y || 0, focus: false }));
+	let shown = location.pathname + location.search;
+	addEventListener('popstate', () => {
+		if (location.pathname + location.search === shown) return; /* only the #hash moved (the skip link) */
+		show({ y: history.state?.y || 0, focus: false });
+	});
 
 	/* ---------- language: redrawn in place, same place on the page ---------- */
 	$('[data-lang-group]').addEventListener('click', (e) => {
@@ -308,6 +356,7 @@
 		const url = new URL(location.href);
 		url.searchParams.set('lang', lang);
 		history.replaceState(history.state, '', url);
+		window.Smooth?.stop();
 		const y = scrollY;
 		swap(() => { render(); window.scrollTo({ top: y, behavior: 'instant' }); });
 	});

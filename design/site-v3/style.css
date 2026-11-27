@@ -53,8 +53,13 @@
 
 	--dur-fast: 150ms;
 	--dur-base: 220ms;
-	--dur-image: 360ms;
+	--dur-reveal: 900ms;   /* an image arriving: slow and soft (Alex, 27/11) */
+	--dur-cross: 800ms;    /* the home drawing: arriving, and changing on a menu hover */
+	--dur-veil: 450ms;     /* a card fading under its title */
 	--ease: cubic-bezier(.2, 0, 0, 1);
+	--ease-out: cubic-bezier(.22, 1, .36, 1);   /* lands softly */
+	--ease-soft: cubic-bezier(.45, 0, .25, 1);  /* in and out softly, for cross-fades */
+	--ease-reveal: cubic-bezier(0, 0, .4, 1);   /* an image arriving: gentle all the way (95% at about 0.8 of the time) */
 }
 @media (prefers-color-scheme: dark) {
 	:root {
@@ -79,7 +84,8 @@ body {
 	transition: background-color var(--dur-base) var(--ease), color var(--dur-base) var(--ease);
 }
 img { display: block; max-width: 100%; height: auto; }
-img.is-loading { opacity: 0; }
+img { transition: opacity var(--dur-reveal) var(--ease-reveal); }
+img.is-veiled { opacity: 0; }
 ul { margin: 0; padding: 0; list-style: none; }
 h1, p, figure { margin: 0; }
 a { color: inherit; }
@@ -175,24 +181,26 @@ button { font: inherit; color: inherit; }
 @media (min-width: 768px) { .stage { width: min(36vw, 34rem); height: min(50svh, 30rem); } }
 .stage__img {
 	position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
-	opacity: 0; transition: opacity var(--dur-image) var(--ease);
+	opacity: 0; transition: opacity var(--dur-cross) var(--ease-soft);
 }
 .stage__img.is-on { opacity: 1; }
-.stage__img.is-on.is-loading { opacity: 0; }
+.stage__img.is-on.is-veiled { opacity: 0; }
 
 /* category: a grid, one card per project (sketch 2); the title shows over the faded drawing */
 .grid { display: grid; grid-template-columns: 1fr; gap: var(--gap); }
 @media (min-width: 560px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .card__link { display: grid; gap: 0.625rem; text-decoration: none; outline-offset: 4px; }
-.card__media { position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: color-mix(in srgb, var(--ink) 5%, var(--paper)); }
+.card__media {
+	position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden; background: color-mix(in srgb, var(--ink) 4%, var(--paper));
+	transition: opacity var(--dur-veil) var(--ease-soft);
+}
 .card__img {
 	width: 100%; height: 100%; object-fit: cover;
-	transition: opacity var(--dur-image) var(--ease);
 }
 .card__title {
 	font-size: var(--type-ui); line-height: 1.35; text-wrap: balance;
-	transition: opacity var(--dur-base) var(--ease), color var(--dur-base) var(--ease);
+	transition: opacity 350ms var(--ease-soft), color var(--dur-base) var(--ease);
 }
 /* With a mouse: the title lives over the drawing, hidden until the pointer or the focus arrives. On touch it
    stays under the drawing, always visible (nothing to hover). */
@@ -203,10 +211,10 @@ button { font: inherit; color: inherit; }
 		font-size: clamp(1.125rem, 0.9rem + 0.6vw, 1.5rem); font-weight: 600; line-height: 1.2; text-align: center;
 		opacity: 0; pointer-events: none;
 	}
-	.card__link:hover .card__img:not(.is-loading), .card__link:focus-visible .card__img:not(.is-loading) { opacity: 0.12; }
+	.card__link:hover .card__media, .card__link:focus-visible .card__media { opacity: 0.12; }
 	.card__link:hover .card__title, .card__link:focus-visible .card__title { opacity: 1; }
 }
-.card__link:active .card__img:not(.is-loading) { opacity: 0.12; }
+.card__link:active .card__media { opacity: 0.12; }
 
 /* project: the images large, one under the other (sketch 3), each one whole on the screen */
 .work__head { display: grid; justify-items: center; gap: 0.375rem; margin-bottom: clamp(1.5rem, 1rem + 2vw, 2.75rem); text-align: center; }
@@ -214,22 +222,40 @@ button { font: inherit; color: inherit; }
 .work__meta { color: var(--muted); font-size: var(--type-ui); }
 .work__flow { display: grid; justify-items: center; gap: clamp(2rem, 1.25rem + 3vw, 4.5rem); }
 .plate { display: grid; justify-items: center; gap: 0.75rem; width: 100%; }
-.plate__img { width: min(100%, calc(var(--r) * 86svh)); height: auto; aspect-ratio: var(--r); transition: opacity var(--dur-image) var(--ease); }
+.plate__img { width: min(100%, calc(var(--r) * 86svh)); height: auto; aspect-ratio: var(--r); }
 .plate__caption { color: var(--muted); font-size: var(--type-small); text-align: center; }
 .prose { width: min(100%, 36rem); color: var(--ink); text-wrap: pretty; }
 .prose p + p { margin-top: 0.9em; }
 .work__intro { margin: 0 auto clamp(2rem, 1.25rem + 3vw, 4.5rem); }
 
-.work__next { display: flex; justify-content: center; margin-top: clamp(3rem, 2rem + 4vw, 6rem); padding-top: clamp(1.5rem, 1rem + 2vw, 2.5rem); border-top: 1px solid var(--rule); }
-.next { display: grid; justify-items: center; gap: 0.25rem; min-height: 2.75rem; padding: 0.25rem 0.5rem; text-align: center; text-decoration: none; }
-.next__label { color: var(--muted); font-size: var(--type-small); transition: color var(--dur-base) var(--ease); }
-.next__title {
-	font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); font-weight: 600; line-height: 1.25;
+/* the end of a project: previous · back to the category · next */
+.pager {
+	display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 1rem 1.5rem;
+	margin-top: clamp(3rem, 2rem + 4vw, 6rem); padding-top: clamp(1.5rem, 1rem + 2vw, 2.5rem); border-top: 1px solid var(--rule);
+}
+.pager__link { display: grid; align-content: start; gap: 0.25rem; min-height: 2.75rem; padding: 0.25rem 0.5rem; text-decoration: none; }
+.pager__link--prev { grid-column: 1; justify-self: start; text-align: left; }
+.pager__link--up { grid-column: 2; justify-self: center; text-align: center; align-content: center; }
+.pager__link--next { grid-column: 3; justify-self: end; text-align: right; }
+.pager__label { color: var(--muted); font-size: var(--type-small); transition: color var(--dur-base) var(--ease); }
+.pager__title {
+	font-size: clamp(1.0625rem, 0.95rem + 0.45vw, 1.3125rem); font-weight: 600; line-height: 1.25; text-wrap: balance;
 	text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 0.3em; text-decoration-color: transparent;
 	transition: text-decoration-color var(--dur-base) var(--ease);
 }
-@media (hover: hover) { .next:hover .next__title { text-decoration-color: currentColor; } .next:hover .next__label { color: var(--ink); } }
-.next:focus-visible .next__title, .next:active .next__title { text-decoration-color: currentColor; }
+.pager__link--up .pager__title { font-size: var(--type-ui); font-weight: 500; }
+@media (hover: hover) {
+	.pager__link:hover .pager__title { text-decoration-color: currentColor; }
+	.pager__link:hover .pager__label { color: var(--ink); }
+}
+.pager__link:focus-visible .pager__title, .pager__link:active .pager__title { text-decoration-color: currentColor; }
+/* phone: the way back on its own line, centred; previous and next under it, each in its corner */
+@media (max-width: 599px) {
+	.pager { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem 1rem; }
+	.pager__link--up { grid-column: 1 / -1; grid-row: 1; }
+	.pager__link--prev { grid-column: 1; grid-row: 2; }
+	.pager__link--next { grid-column: 2; grid-row: 2; }
+}
 
 .missing { display: grid; justify-items: center; gap: 1rem; padding-block: clamp(3rem, 2rem + 6vw, 7rem); text-align: center; }
 .missing__title { font-size: var(--type-title); font-weight: 600; line-height: 1.2; }
@@ -257,8 +283,8 @@ button { font: inherit; color: inherit; }
 }
 
 /* ---------- view change: a short cross-fade ---------- */
-.is-routing::view-transition-old(root) { animation: vt-out 160ms var(--ease) both; }
-.is-routing::view-transition-new(root) { animation: vt-in 220ms var(--ease) both; }
+.is-routing::view-transition-old(root) { animation: vt-out 240ms var(--ease-soft) both; }
+.is-routing::view-transition-new(root) { animation: vt-in 380ms var(--ease-out) both; }
 @keyframes vt-out { to { opacity: 0; } }
 @keyframes vt-in { from { opacity: 0; } }
 

@@ -33,18 +33,27 @@ a estrela (Alex, 26/11).
   padrão, e tocar num item navega.
 - **Grid no celular:** 1 coluna até 559 px, 2 até 1023 px, 3 daí para cima.
 - **Projeto:** cada imagem cabe inteira na altura da tela (até 86% dela). Título e ano centralizados acima, pequenos;
-  as legendas de etapa do Daniel ("Linha", "Cor"…) ficam embaixo de cada imagem. No fim, "Próximo projeto", dentro da
-  mesma categoria.
+  as legendas de etapa do Daniel ("Linha", "Cor"…) ficam embaixo de cada imagem. No fim (pedido do Alex, 27/11):
+  projeto anterior à esquerda, "Voltar para <categoria>" ao centro e próximo projeto à direita, na ordem do grid,
+  circular. Com 1 projeto, só o centro; com 2, o outro só à direita. No celular, o "Voltar" fica numa linha própria e
+  anterior e próximo embaixo, cada um no seu canto.
 - **Fora da interface:** Sobre e Animação. Não há visualizador ampliado: as imagens já estão grandes.
 - **Dados:** o snapshot `design/assets/projects.js`, lido sem alteração. Tudo o que o Daniel vai trocar (as 4 imagens
   da home, a troca de categoria por projeto, o recorte do grid e os links) fica num lugar só: `design/site-v3/data.js`.
   Sanity parado (Alex, 26/11).
 
 ## 4. Movimento
-Curto e discreto. Hover, foco e ativo mudam por cor ou sublinhado que esmaece (150 a 220 ms). A imagem da home troca
-num esmaecimento cruzado de 360 ms; o cartão esmaece para 12% em 360 ms e o título aparece em 220 ms. Toda imagem chega
-com um esmaecimento. Troca de tela: esmaecimento de 160 a 220 ms. Nada desliza, cresce ou segue o cursor; cursor do
-sistema. `prefers-reduced-motion`: sem transições.
+Suave e discreto, a serviço das imagens (Alex, 27/11: "scroll suave e imagens aparecendo com fade in bem suave. Nada
+bruto. Judô: caminho suave").
+- **Rolagem** (`smooth.js`, nossa, sem biblioteca): a roda do mouse move um alvo e a página o segue com uma curva curta
+  (constante de 80 ms). Responde no mesmo quadro e assenta em cerca de 0,25 s, sem a inércia longa cortada em 26/11.
+  Fica nativa no toque, com movimento reduzido, no teclado, na barra de rolagem e no voltar (que restaura a posição).
+- **Imagens:** cada uma aparece com um fade de opacidade de 900 ms, quando entra na tela e só depois do decode. Não
+  se desloca, não cresce e não some de novo. No grid, cartões que chegam juntos se seguem por 70 ms (até quatro).
+- **Estados:** hover, foco e ativo mudam por cor ou sublinhado que esmaece (150 a 220 ms). A imagem da home chega e troca num
+  esmaecimento cruzado de 800 ms; a seguinte só entra quando já está pronta. O cartão esmaece para 12% em 450 ms e o título aparece em 350 ms. Troca de tela:
+  esmaecimento de 240 ms na saída e 380 ms na entrada. Cursor do sistema.
+- **`prefers-reduced-motion`:** rolagem nativa, imagens na hora, sem transições.
 
 ## 5. O que esta versão não terá
 Cursor próprio, revelação ao rolar, paralaxe, zoom no hover, rolagem inercial, eyebrow, legenda inventada, texto sobre a
